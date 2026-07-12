@@ -102,7 +102,7 @@
     function process(){
       if(document.visibilityState !== 'visible') return;   // only animate a visible page
       var vh = window.innerHeight || 800;
-      var els = [].slice.call(document.querySelectorAll('.reveal, .reveal-stagger, .reveal-fade, .reveal-words'))
+      var els = [].slice.call(document.querySelectorAll('.reveal, .reveal-stagger, .reveal-fade, .reveal-words, .reveal-letters'))
                   .filter(function(e){ return !e.classList.contains('armed') && !e.classList.contains('in'); });
       if(!els.length) return;
       if('IntersectionObserver' in window && !io){
@@ -313,6 +313,100 @@
     activate(0); pick();
   }
 
+  // ---- Letter-split (v5) ----
+  // Splits words into per-character spans (words wrapped nowrap so line
+  // breaking is preserved). Pairs with .reveal-letters for scroll cascades.
+  function letters(eln){
+    if(!eln || eln.dataset.split || REDUCE()) return;
+    eln.dataset.split = 1;
+    var i = 0;
+    (function walk(node){
+      [].slice.call(node.childNodes).forEach(function(ch){
+        if(ch.nodeType === 3){
+          var frag = document.createDocumentFragment();
+          ch.textContent.split(/(\s+)/).forEach(function(part){
+            if(!part) return;
+            if(/^\s+$/.test(part)){ frag.append(document.createTextNode(part)); return; }
+            var w = document.createElement('span'); w.className = 'lw';
+            for(var k = 0; k < part.length; k++){
+              var l = document.createElement('span'); l.className = 'l';
+              l.style.setProperty('--i', i++); l.textContent = part[k];
+              w.appendChild(l);
+            }
+            frag.append(w);
+          });
+          node.replaceChild(frag, ch);
+        } else if(ch.nodeType === 1) walk(ch);
+      });
+    })(eln);
+    eln.classList.add('reveal-letters');
+  }
+
+  // ---- Ambient particles (v5) ----
+  // ~30 lime fireflies drifting inside a dark section. Wraps at edges,
+  // pauses off-screen and in hidden tabs. Purely decorative.
+  function particles(host, opts){
+    if(!host || REDUCE() || host.dataset.fxp) return;
+    host.dataset.fxp = 1;
+    var o = Object.assign({count: 30}, opts);
+    var cv = document.createElement('canvas'); cv.className = 'fx-particles';
+    var pos = getComputedStyle(host).position;
+    if(pos === 'static') host.style.position = 'relative';
+    host.prepend(cv);
+    var ctx = cv.getContext('2d'), W = 0, H = 0, dots = [], visible = false;
+    function size(){
+      var d = Math.min(devicePixelRatio || 1, 1.5);
+      W = host.clientWidth; H = host.clientHeight;
+      cv.width = W * d; cv.height = H * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+    }
+    size(); addEventListener('resize', size, {passive: true});
+    for(var i = 0; i < o.count; i++) dots.push({
+      x: Math.random() * 1e4 % 1, y: Math.random() * 1e4 % 1,
+      r: .4 + Math.random() * 1.4, a: .06 + Math.random() * .3,
+      vx: (Math.random() - .5) * .00022, vy: -.00008 - Math.random() * .00025,
+      tw: 2 + Math.random() * 3, ph: Math.random() * 7
+    });
+    if('IntersectionObserver' in window)
+      new IntersectionObserver(function(en){ visible = en[0].isIntersecting; }, {threshold: .02}).observe(host);
+    else visible = true;
+    (function tick(t){
+      requestAnimationFrame(tick);
+      if(!visible || document.hidden) return;
+      ctx.clearRect(0, 0, W, H);
+      dots.forEach(function(p){
+        p.x = (p.x + p.vx + 1) % 1; p.y = (p.y + p.vy + 1) % 1;
+        var a = p.a * (.55 + .45 * Math.sin(t / (p.tw * 1000) + p.ph));
+        ctx.globalAlpha = a;
+        ctx.fillStyle = p.r > 1.2 ? '#c3f35c' : '#e9f5d8';
+        ctx.beginPath(); ctx.arc(p.x * W, p.y * H, p.r, 0, 7); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+    })(0);
+  }
+
+  // ---- Custom cursor (v5) ----
+  // 6px difference-blend dot tracks instantly; lime ring trails with lerp
+  // and swells over interactive elements. Fine pointers only.
+  function cursor(){
+    if(REDUCE() || !matchMedia('(pointer:fine)').matches || document.querySelector('.fx-dot')) return;
+    document.documentElement.classList.add('fx-cursor-on');
+    var dot = document.createElement('div'); dot.className = 'fx-dot';
+    var ring = document.createElement('div'); ring.className = 'fx-ring';
+    document.body.append(dot, ring);
+    var mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+    addEventListener('pointermove', function(e){
+      mx = e.clientX; my = e.clientY;
+      dot.style.transform = 'translate(' + mx + 'px,' + my + 'px) translate(-50%,-50%)';
+      var t = e.target.closest && e.target.closest('a,button,select,summary,input,.card-hover,.fx-ch');
+      ring.classList.toggle('hot', !!t);
+    }, {passive: true});
+    (function tick(){
+      requestAnimationFrame(tick);
+      rx += (mx - rx) * .16; ry += (my - ry) * .16;
+      ring.style.transform = 'translate(' + rx + 'px,' + ry + 'px) translate(-50%,-50%)';
+    })();
+  }
+
   // ---- Auto-motion for marketing pages (v4) ----
   // Every public page gets the house choreography for free: word-by-word
   // headline reveal, a breathing aurora in the dark hero, and staggered
@@ -350,6 +444,25 @@
     document.querySelectorAll('.section .grid, .tier-strip, .tk-bento, .plans, .wb-grid, .feat4, .faq')
       .forEach(function(g){ g.classList.add('reveal-stagger'); });
     document.querySelectorAll('.section > .wrap').forEach(function(w){ w.classList.add('reveal'); });
+
+    // ---- Luxury layer (v5): grain, cursor, particles, letter cascades ----
+    if(!document.querySelector('.fx-grain')){
+      var grain = document.createElement('div'); grain.className = 'fx-grain';
+      grain.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(grain);
+    }
+    cursor();
+    // fireflies in every dark section except the hero film
+    document.querySelectorAll('.dark-deep, .dark-sec').forEach(function(sec){
+      if(sec.querySelector('.hero-pin') || sec.tagName === 'FOOTER') return;
+      particles(sec, {count: Math.min(34, Math.max(16, Math.round(sec.offsetHeight / 26)))});
+    });
+    // section statement headers cascade letter-by-letter (h1s keep word reveal)
+    document.querySelectorAll('.section h2.h-lg, .section h2.h-md, .section h2.display, .unify-sec .h-lg').forEach(function(hd){
+      if(h1 && (hd === h1 || hd.contains(h1) || (h1.contains && h1.contains(hd)))) return;
+      hd.classList.remove('reveal-words');
+      letters(hd);
+    });
     rescanReveal();
   }
 
@@ -357,5 +470,5 @@
   else document.addEventListener('DOMContentLoaded', function(){ initReveal(); autoMotion(); });
 
   w.FX = { areaChart, spark, barChart, donut, toast, copy, initReveal, rescanReveal, drawChart, unify,
-           candles, words, tilt, parallax };
+           candles, words, tilt, parallax, letters, particles, cursor };
 })(window);

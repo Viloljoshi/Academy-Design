@@ -534,6 +534,75 @@ h1,h2,h3,h4,h5 {
 .scroll-progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 200;
   background: linear-gradient(90deg, var(--lime-dim), var(--lime)); transform: scaleX(0); transform-origin: left; pointer-events: none; }
 
+/* ---------- Luxury layer (v5, ported from the animated-website system) ---------- */
+
+/* Film grain: full-page filmic texture, above content, below cursor */
+.fx-grain { position: fixed; inset: 0; z-index: 300; pointer-events: none;
+  background-image: var(--noise); background-size: 220px 220px; opacity: .05;
+  mix-blend-mode: overlay; }
+
+/* Ambient particles: one canvas per dark section */
+.fx-particles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+
+/* Custom cursor: dot tracks instantly, ring trails with lerp (fine pointers only) */
+.fx-cursor-on, .fx-cursor-on a, .fx-cursor-on button, .fx-cursor-on select,
+.fx-cursor-on input, .fx-cursor-on textarea, .fx-cursor-on summary { cursor: none; }
+.fx-dot { position: fixed; top: 0; left: 0; width: 6px; height: 6px; border-radius: 50%;
+  background: #fff; mix-blend-mode: difference; z-index: 9998; pointer-events: none;
+  transform: translate(-50%, -50%); }
+.fx-ring { position: fixed; top: 0; left: 0; width: 34px; height: 34px; border-radius: 50%;
+  border: 1.5px solid rgba(195,243,92,.55); z-index: 9997; pointer-events: none;
+  transform: translate(-50%, -50%); transition: width .3s var(--ease), height .3s var(--ease),
+  border-color .3s, box-shadow .3s; }
+.fx-ring.hot { width: 54px; height: 54px; border-color: var(--lime);
+  box-shadow: 0 0 24px rgba(195,243,92,.35); }
+
+/* Letter-split reveal: characters cascade in when the reveal engine fires */
+.reveal-letters .lw { display: inline-block; }
+.reveal-letters.armed .l { display: inline-block; opacity: 0;
+  transform: translateY(.35em); filter: blur(6px); animation: none; }
+.reveal-letters.armed.in .l { animation: letterIn .55s var(--ease) forwards;
+  animation-delay: calc(var(--i) * 16ms); }
+@keyframes letterIn { to { opacity: 1; transform: none; filter: blur(0); } }
+
+/* Glass stat bar (count-up numbers inside dark sections) */
+.fx-stats { display: flex; flex-wrap: wrap; gap: 0; border-radius: var(--r-xl);
+  background: rgba(244,248,240,.04);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,.09);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1); overflow: hidden; }
+.fx-stat { flex: 1; min-width: 140px; padding: 22px 26px; text-align: center;
+  border-right: 1px solid rgba(255,255,255,.07); }
+.fx-stat:last-child { border-right: 0; }
+.fx-stat b { display: block; font-family: var(--font-display); font-weight: 800;
+  font-size: 30px; letter-spacing: -.02em; color: var(--d-ink); font-variant-numeric: tabular-nums; }
+.fx-stat b .suf { font-size: 17px; color: var(--lime); }
+.fx-stat span { display: block; margin-top: 5px; font-size: 11px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--d-ink-var); }
+
+/* Chapter markers: fixed right-side dots with hover labels */
+.fx-chapters { position: fixed; right: 22px; top: 50%; transform: translateY(-50%);
+  z-index: 60; display: flex; flex-direction: column; gap: 18px; }
+.fx-ch { position: relative; width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(128,140,128,.4); border: 0; padding: 0; cursor: pointer;
+  transition: background .3s, box-shadow .3s, transform .3s var(--ease); }
+.fx-ch:hover { transform: scale(1.4); }
+.fx-ch.on { background: var(--lime); box-shadow: 0 0 12px rgba(195,243,92,.6); }
+.fx-ch i { position: absolute; right: 18px; top: 50%; transform: translateY(-50%) translateX(6px);
+  font: 700 11px var(--font-body); font-style: normal; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--on-surface); background: rgba(251,252,248,.88);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border: 1px solid var(--outline-var); border-radius: 9999px; padding: 5px 11px;
+  white-space: nowrap; opacity: 0; pointer-events: none;
+  transition: opacity .25s var(--ease), transform .25s var(--ease); }
+.fx-ch:hover i { opacity: 1; transform: translateY(-50%) translateX(0); }
+@media (max-width: 1200px) { .fx-chapters { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .fx-grain, .fx-dot, .fx-ring { display: none !important; }
+  .fx-cursor-on, .fx-cursor-on a, .fx-cursor-on button { cursor: auto; }
+  .reveal-letters.armed .l { opacity: 1 !important; transform: none !important; filter: none !important; }
+}
+
 /* Ambient hero motion graphics */
 .floaty { animation: floaty 7s var(--ease-in-out) infinite; }
 @keyframes floaty { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-12px) } }
