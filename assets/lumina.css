@@ -581,7 +581,8 @@ h1,h2,h3,h4,h5 {
   white-space: nowrap; font-family: var(--font-display); font-weight: 800;
   font-size: 30px; letter-spacing: -.02em; color: var(--d-ink); font-variant-numeric: tabular-nums; }
 .fx-stat b .suf { font-size: 17px; color: var(--lime); }
-.fx-stat span { display: block; margin-top: 5px; font-size: 11px; font-weight: 700;
+/* label = the DIRECT-child span only; the value/suffix spans live inside <b> */
+.fx-stat > span { display: block; margin-top: 5px; font-size: 11px; font-weight: 700;
   letter-spacing: .14em; text-transform: uppercase; color: var(--d-ink-var); }
 
 /* Chapter markers: fixed right-side dots with hover labels */
