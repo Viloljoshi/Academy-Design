@@ -15,7 +15,9 @@
      content glides out on a lerped parallax. */
   .hero{position:relative;}
   .hero-pin{position:relative;height:100vh;min-height:640px;overflow:hidden;display:flex;flex-direction:column;}
-  .hero-media{position:absolute;inset:0;overflow:hidden;}
+  /* media is oversized above/below the viewport so the scroll parallax can
+     drift it without ever exposing a seam at the edges */
+  .hero-media{position:absolute;left:0;right:0;top:-16vh;bottom:-6vh;overflow:hidden;}
   .hero-poster{position:absolute;inset:0;background:url('../assets/media/hero-poster.jpg') center/cover;background-position:62% center;}
   .hero-obj{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:62% center;pointer-events:none;}
   @media(prefers-reduced-motion:reduce){.hero-obj{display:none;}}
