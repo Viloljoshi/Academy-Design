@@ -6,22 +6,23 @@
 <title>FX Academy, White Label</title>
 <link rel="stylesheet" href="../assets/lumina.css">
 <script src="../assets/shell.js"></script>
+<script src="../assets/lumina.js"></script>
 <style>
-  .wl-hero{background:var(--d-bg);color:var(--d-ink);padding:60px 0 64px;position:relative;overflow:hidden;}
+  .wl-hero{color:var(--d-ink);padding:60px 0 64px;position:relative;overflow:hidden;}
   .feat4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
   .feat-ic{width:44px;height:44px;border-radius:11px;background:rgba(168,214,66,.15);color:var(--lime);display:grid;place-items:center;margin-bottom:14px;}
   .browserbar{display:flex;align-items:center;gap:7px;padding:10px 14px;background:var(--c);border-radius:12px 12px 0 0;}
-  @media(max-width:900px){.feat4{grid-template-columns:1fr 1fr;}}
+  @media(max-width:900px){.feat4{grid-template-columns:1fr 1fr;}#flow{grid-template-columns:1fr 1fr !important;}}@media(max-width:560px){#flow{grid-template-columns:1fr !important;}.feat4{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 <div id="nav"></div>
-<section class="wl-hero">
+<section class="wl-hero dark-deep">
   <div class="glow glow-leaf" style="width:480px;height:380px;top:-140px;right:-80px;opacity:.4;"></div>
   <div class="wrap" style="position:relative;z-index:1;">
     <div style="max-width:640px;">
       <span class="chip" style="background:var(--glass-dark);color:var(--lime);border:1px solid var(--d-outline-strong);">For coaches, prop firms & academies</span>
-      <h1 class="h-lg" style="margin:16px 0 12px;">Launch your own branded trading academy.</h1>
+      <h1 class="display" style="margin:18px 0 14px;">Launch your own branded trading academy.</h1>
       <p class="body-lg" style="color:var(--d-ink-var);max-width:520px;">White-label FX Academy under your brand, colors and domain. We provide the platform, curriculum engine and tools, you own the relationship.</p>
       <div class="row gap2" style="margin-top:24px;flex-wrap:wrap;">
         <a href="../partner/onboarding.html" class="btn btn-lime btn-lg">Start partner onboarding</a>

@@ -3,19 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FX Academy, Trade Journal</title>
+<title>FX Academy · Trade Journal</title>
 <link rel="stylesheet" href="../assets/lumina.css">
 <script src="../assets/shell.js"></script>
 <script src="../assets/lumina.js"></script>
+<script src="../assets/seed.js"></script>
 <style>
   .stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px;}
   .sc{background:var(--c-lowest);border:1px solid var(--outline-var);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow-sm);}
   .sc .l{font-size:11.5px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--on-surface-var);}
   .sc .v{font-family:var(--font-display);font-weight:700;font-size:25px;letter-spacing:-.02em;margin-top:6px;}
+  .sc .s{font-size:12px;color:var(--on-surface-var);margin-top:3px;}
   .jgrid{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;}
-  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .filters{display:flex;gap:10px;flex-wrap:wrap;}
+  .filters select{width:auto;padding:8px 12px;font-size:13px;}
   .dirpill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:9999px;}
   .res{font-weight:700;font-variant-numeric:tabular-nums;}
+  .note-row td{padding:0 14px 14px;border-bottom:1px solid var(--c-high);}
+  .note-box{display:flex;gap:12px;align-items:flex-start;background:var(--c-low);border-radius:var(--r);padding:12px 14px;font-size:13px;color:var(--on-surface-var);}
+  .shot-chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--on-surface-var);background:var(--c);border-radius:8px;padding:4px 9px;white-space:nowrap;}
+  .tbl tr.trade{cursor:pointer;}
+  .jgrid > *{min-width:0;}   /* let the table card shrink; wrapper scrolls */
   @media(max-width:1100px){.stat-grid{grid-template-columns:repeat(3,1fr);}.jgrid{grid-template-columns:1fr;}}
   @media(max-width:560px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
 </style>
@@ -35,39 +43,44 @@
 
       <div class="jgrid">
         <div class="card card-pad">
-          <div class="between" style="margin-bottom:14px;">
-            <h3 style="font-size:16px;font-weight:700;">Recent trades</h3>
-            <div class="filters" style="margin:0;">
-              <select class="input" style="width:auto;padding:8px 12px;font-size:13px;"><option>All pairs</option><option>EUR/USD</option><option>GBP/USD</option><option>USD/JPY</option><option>XAU/USD</option></select>
-              <select class="input" style="width:auto;padding:8px 12px;font-size:13px;"><option>All results</option><option>Wins</option><option>Losses</option><option>Breakeven</option></select>
+          <div class="between" style="margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+            <h3 style="font-size:16px;font-weight:700;">Trades <span class="muted" style="font-weight:600;font-size:13px;" id="count"></span></h3>
+            <div class="filters">
+              <select class="input" id="fPair"><option value="">All pairs</option></select>
+              <select class="input" id="fSetup"><option value="">All strategies</option></select>
+              <select class="input" id="fMonth"><option value="">All months</option></select>
+              <select class="input" id="fRes"><option value="">All results</option><option value="win">Wins</option><option value="loss">Losses</option><option value="be">Breakeven</option></select>
             </div>
           </div>
           <div style="overflow-x:auto;">
             <table class="tbl" id="trades"></table>
           </div>
+          <button class="btn btn-ghost btn-sm btn-block" id="more" style="margin-top:14px;">Show more</button>
+          <p class="muted" style="font-size:12px;margin:12px 0 0;text-align:center;">Educational data · not investment advice.</p>
         </div>
 
         <div class="stack gap3">
           <div class="card card-pad">
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:4px;">Equity curve</h3>
+            <p class="muted" style="font-size:12.5px;margin:0 0 10px;">Cumulative R · <span class="num" id="eqLabel"></span></p>
+            <div id="equity" style="height:140px;"></div>
+          </div>
+          <div class="card card-pad">
             <h3 style="font-size:15px;font-weight:700;margin-bottom:4px;">Win / loss split</h3>
-            <p class="muted" style="font-size:12.5px;margin:0 0 10px;">Last 30 trades</p>
+            <p class="muted" style="font-size:12.5px;margin:0 0 10px;">Last 90 days</p>
             <div style="display:flex;align-items:center;gap:18px;">
               <div id="donut"></div>
-              <div class="stack gap1" style="font-size:13px;">
-                <div class="row gap1"><span style="width:10px;height:10px;border-radius:3px;background:var(--lime-dim);"></span>Wins · 17</div>
-                <div class="row gap1"><span style="width:10px;height:10px;border-radius:3px;background:var(--neg);"></span>Losses · 11</div>
-                <div class="row gap1"><span style="width:10px;height:10px;border-radius:3px;background:var(--outline-var);"></span>Breakeven · 2</div>
-              </div>
+              <div class="stack gap1" style="font-size:13px;" id="donutLegend"></div>
             </div>
           </div>
           <div class="card card-pad">
-            <h3 style="font-size:15px;font-weight:700;margin-bottom:4px;">R multiple by pair</h3>
-            <p class="muted" style="font-size:12.5px;margin:0 0 8px;">Net R, last 30 days</p>
-            <div id="pairs"></div>
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:4px;">Net R by strategy</h3>
+            <p class="muted" style="font-size:12.5px;margin:0 0 8px;">Last 90 days</p>
+            <div id="setups"></div>
           </div>
           <div class="card card-pad" style="background:linear-gradient(135deg,#14241b,#0f1d16);color:var(--d-ink);border:none;">
             <div class="row gap2" style="margin-bottom:8px;"><span style="width:30px;height:30px;border-radius:8px;background:rgba(168,214,66,.15);display:grid;place-items:center;color:var(--lime);flex:none;">✦</span><h3 style="font-size:15px;font-weight:700;color:#fff;">AI reflection</h3></div>
-            <p style="font-size:13.5px;line-height:1.5;color:var(--d-ink-var);margin:0 0 12px;">Your <strong style="color:var(--lime);">EUR/USD</strong> breakout-retest trades average 1.8R, but Friday trades drag your weekly win rate. Consider capping Friday entries at 2.</p>
+            <p style="font-size:13.5px;line-height:1.5;color:var(--d-ink-var);margin:0 0 12px;" id="aiNote"></p>
             <a href="analytics.html" class="btn btn-glass btn-sm btn-block">Open analytics</a>
           </div>
         </div>
@@ -82,32 +95,81 @@ document.getElementById('side').outerHTML = FXShell.surfaceSidebar('member','Tra
 document.head.insertAdjacentHTML('beforeend', FXShell.appStyles());
 document.getElementById('top').outerHTML = FXShell.appTop({title:'Trade Journal', right:`<span class="chip ${plan==='basic'?'chip-outline':'chip-lime'}">${plan==='basic'?'Basic':'Pro'}</span>`});
 
-const stats=[['Trades · week','7'],['Win rate','58%','text-pos'],['Avg R:R','1.9'],['Net R · 30d','+18.4R','text-pos'],['Best pair','EUR/USD'],['Emotion','7.2 / 10']];
-document.getElementById('stats').innerHTML = stats.map(([l,v,c])=>`<div class="sc"><div class="l">${l}</div><div class="v ${c||''}">${v}</div></div>`).join('');
+const D = FXData, S = D.stats;
 
-const trades=[
-  ['EUR/USD','long','Breakout retest','NY','win','+2.1R','#'],
-  ['GBP/JPY','short','Liquidity sweep','London','loss','-1.0R','#'],
-  ['XAU/USD','long','Trend continuation','NY','win','+1.6R','#'],
-  ['USD/JPY','short','Range fade','Asia','breakeven','0.0R','#'],
-  ['GBP/USD','long','Support bounce','London','win','+2.4R','#'],
-  ['EUR/USD','short','Failed breakout','NY','loss','-1.0R','#'],
-  ['AUD/USD','long','Session open','Asia','win','+1.2R','#']
-];
+// ---- Summary stats (all consistent with dashboard & analytics) ----
+const best = Math.max(...D.trades.map(t=>t.r)).toFixed(1);
+const worst = Math.min(...D.trades.map(t=>t.r)).toFixed(1);
+document.getElementById('stats').innerHTML = [
+  ['Net R · 90d', (S.last90.netR>0?'+':'')+S.last90.netR+'R', S.last90.netR>=0?'text-pos':'text-neg', S.last90.n+' trades'],
+  ['Win rate · 90d', S.last90.winRate+'%', '', S.last90.wins+'W / '+S.last90.losses+'L / '+S.last90.be+'BE'],
+  ['Avg planned R:R', S.last90.avgRR, '', 'avg win +'+S.last90.avgWinR+'R'],
+  ['Best / worst', '+'+best+'R', 'text-pos', worst+'R worst'],
+  ['Current streak', S.streak.n+' '+(S.streak.type==='win'?'wins':'losses'), S.streak.type==='win'?'text-pos':'text-neg', 'by outcome'],
+  ['This week', (S.week.netR>0?'+':'')+S.week.netR+'R', S.week.netR>=0?'text-pos':'text-neg', S.week.n+' trades']
+].map(([l,v,c,s])=>`<div class="sc"><div class="l">${l}</div><div class="v num ${c||''}">${v}</div><div class="s">${s}</div></div>`).join('');
+
+// ---- Filters ----
+const uniq = (k)=>[...new Set(D.trades.map(t=>t[k]))];
+document.getElementById('fPair').insertAdjacentHTML('beforeend', uniq('pair').map(p=>`<option>${p}</option>`).join(''));
+document.getElementById('fSetup').insertAdjacentHTML('beforeend', uniq('setup').map(p=>`<option>${p}</option>`).join(''));
+document.getElementById('fMonth').insertAdjacentHTML('beforeend', D.months.map(m=>`<option>${m}</option>`).join(''));
+
 const dirC={long:'background:rgba(78,168,99,.16);color:#2c6b3d;',short:'background:var(--error-container);color:var(--on-error-container);'};
-const resC={win:'var(--pos)',loss:'var(--neg)',breakeven:'var(--outline)'};
-document.getElementById('trades').innerHTML =
-  `<thead><tr><th>Pair</th><th>Dir</th><th>Setup</th><th>Session</th><th>Result</th><th style="text-align:right;">R</th></tr></thead>
-   <tbody>${trades.map(t=>`<tr style="cursor:pointer;" onclick="location.href='trade-new.html'">
-     <td style="font-weight:700;">${t[0]}</td>
-     <td><span class="dirpill" style="${dirC[t[1]]}">${t[1]}</span></td>
-     <td class="muted">${t[2]}</td>
-     <td class="muted">${t[3]}</td>
-     <td style="text-transform:capitalize;color:${resC[t[4]]};font-weight:600;">${t[4]}</td>
-     <td class="res" style="text-align:right;color:${resC[t[4]]};">${t[5]}</td></tr>`).join('')}</tbody>`;
+const resC={win:'var(--pos)',loss:'var(--neg)',be:'var(--outline)'};
+const resT={win:'Win',loss:'Loss',be:'BE'};
+let shown = 15, open = -1;
 
-FX.donut(document.getElementById('donut'), {segments:[{value:17,color:'#a8d642'},{value:11,color:'#ba1a1a'},{value:2,color:'#c2c8bf'}], size:110, thickness:18, center:'57%', centerSub:'win rate'});
-FX.barChart(document.getElementById('pairs'), {data:[{label:'EUR',value:7.2},{label:'GBP',value:4.1},{label:'XAU',value:5.6},{label:'JPY',value:-1.2,color:'#ba1a1a'},{label:'AUD',value:2.8}], height:150});
+function filtered(){
+  const p=fPair.value, s=fSetup.value, m=fMonth.value, r=fRes.value;
+  return D.trades.filter(t=>
+    (!p||t.pair===p) && (!s||t.setup===s) && (!r||t.outcome===r) &&
+    (!m||D.MONTHS[t.date.getMonth()]+' '+t.date.getFullYear()===m)
+  ).slice().reverse();     // newest first
+}
+function render(){
+  const list = filtered();
+  document.getElementById('count').textContent = '· '+list.length;
+  document.getElementById('more').style.display = list.length>shown?'':'none';
+  document.getElementById('trades').innerHTML =
+    `<thead><tr><th>Date</th><th>Pair</th><th>Dir</th><th>Strategy</th><th>Session</th><th>Result</th><th style="text-align:right;">R</th></tr></thead>
+     <tbody>${list.slice(0,shown).map((t,i)=>`
+     <tr class="trade" onclick="toggleNote(${i})">
+       <td class="muted num" style="white-space:nowrap;">${D.fmtDate(t.date)}</td>
+       <td style="font-weight:700;">${t.pair}</td>
+       <td><span class="dirpill" style="${dirC[t.dir]}">${t.dir}</span></td>
+       <td class="muted">${t.setup}</td>
+       <td class="muted">${t.session}</td>
+       <td style="color:${resC[t.outcome]};font-weight:600;">${resT[t.outcome]}</td>
+       <td class="res num" style="text-align:right;color:${resC[t.outcome]};">${t.r>0?'+':''}${t.r.toFixed(1)}R</td></tr>
+     ${open===i?`<tr class="note-row"><td colspan="7"><div class="note-box">
+        <span style="flex:1;"><b style="color:var(--on-surface);">Note</b> — ${t.note}<br><span style="font-size:12px;">Risk ${t.riskPct}% · planned ${t.plannedRR}R:R · discipline ${t.discipline}/10</span></span>
+        <span class="shot-chip">📷 Chart screenshot · coming soon</span>
+      </div></td></tr>`:''}`).join('')}</tbody>`;
+}
+window.toggleNote = (i)=>{ open = open===i?-1:i; render(); };
+['fPair','fSetup','fMonth','fRes'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{shown=15;open=-1;render();}));
+document.getElementById('more').addEventListener('click',()=>{shown+=15;render();});
+render();
+
+// ---- Rail charts ----
+document.getElementById('eqLabel').textContent = D.trades.length+' trades · '+(S.all.netR>0?'+':'')+S.all.netR+'R total';
+FX.areaChart(document.getElementById('equity'), {data:D.equity, height:140, color:'#a8d642'});
+FX.donut(document.getElementById('donut'), {segments:[
+  {value:S.last90.wins,color:'#a8d642'},{value:S.last90.losses,color:'#ba1a1a'},{value:S.last90.be,color:'#c2c8bf'}
+], size:110, thickness:18, center:S.last90.winRate+'%', centerSub:'win rate'});
+document.getElementById('donutLegend').innerHTML = [
+  ['var(--lime-dim)','Wins · '+S.last90.wins],['var(--neg)','Losses · '+S.last90.losses],['var(--outline-var)','Breakeven · '+S.last90.be]
+].map(([c,t])=>`<div class="row gap1"><span style="width:10px;height:10px;border-radius:3px;background:${c};"></span>${t}</div>`).join('');
+FX.barChart(document.getElementById('setups'), {data:
+  D.bySetup.map(s=>({label:s.key.split(' ')[0], value:s.netR, color:s.netR<0?'#ba1a1a':undefined}))
+, height:150});
+
+// ---- AI reflection derived from the same data ----
+const bestSetup = D.bySetup.slice().sort((a,b)=>b.netR-a.netR)[0];
+const fri = D.byDow.find(d=>d.key==='Fri');
+document.getElementById('aiNote').innerHTML =
+  `Your <strong style="color:var(--lime);">${bestSetup.key}</strong> entries lead at ${(bestSetup.netR>0?'+':'')}${bestSetup.netR}R over 90 days, but Friday win rate (${fri.winRate}%) sits well below your ${S.last90.winRate}% average. Consider capping Friday entries at 2.`;
 </script>
 </body>
 </html>

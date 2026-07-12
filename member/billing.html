@@ -12,7 +12,7 @@
   .panel{background:var(--c-lowest);border:1px solid var(--outline-var);border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
   .plan-now{background:linear-gradient(150deg,#15271c,#0a1410);color:var(--d-ink);border-radius:var(--r-lg);padding:24px;position:relative;overflow:hidden;box-shadow:var(--shadow-dark);margin-bottom:20px;}
   .card-brand{width:46px;height:32px;border-radius:6px;background:linear-gradient(135deg,#3c5a41,#0f3218);display:grid;place-items:center;color:#fff;font-size:11px;font-weight:700;}
-  .ph{font-size:15px;font-weight:700;margin:0 0 16px;}
+  .ph2{font-size:15px;font-weight:700;margin:0 0 16px;}
   @media(max-width:900px){.bgrid{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -42,7 +42,7 @@
           </div>
 
           <div class="panel">
-            <h3 class="ph">Billing history</h3>
+            <h3 class="ph2">Billing history</h3>
             <table class="tbl">
               <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th style="text-align:right;">Receipt</th></tr></thead>
               <tbody id="histRows"></tbody>
@@ -52,7 +52,7 @@
 
         <div>
           <div class="panel">
-            <h3 class="ph">Payment method</h3>
+            <h3 class="ph2">Payment method</h3>
             <div class="row gap2" style="padding:12px;background:var(--c-low);border-radius:10px;">
               <span class="card-brand">VISA</span>
               <div><div style="font-weight:600;font-size:14px;">•••• 4242</div><div class="muted" style="font-size:12.5px;">Expires 08/27</div></div>
@@ -60,11 +60,11 @@
             <button class="btn btn-ghost btn-sm btn-block" style="margin-top:12px;">Update card</button>
           </div>
           <div class="panel">
-            <h3 class="ph">Plan includes</h3>
+            <h3 class="ph2">Plan includes</h3>
             <div class="stack gap2" id="planFeats"></div>
           </div>
           <div class="panel" style="border-color:rgba(186,26,26,.25);">
-            <h3 class="ph" style="color:var(--neg);">Cancel plan</h3>
+            <h3 class="ph2" style="color:var(--neg);">Cancel plan</h3>
             <p class="muted" style="font-size:13px;margin:0 0 12px;">Keep access until the end of your billing period. Your progress is always saved.</p>
             <button class="btn btn-ghost btn-sm btn-block" style="color:var(--neg);border-color:rgba(186,26,26,.3);">Cancel subscription</button>
           </div>

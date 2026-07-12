@@ -7,22 +7,22 @@
 <link rel="stylesheet" href="../assets/lumina.css">
 <script src="../assets/shell.js"></script>
 <style>
-  .wb-hero{background:var(--d-bg);color:var(--d-ink);padding:60px 0 64px;position:relative;overflow:hidden;}
+  .wb-hero{color:var(--d-ink);padding:60px 0 64px;position:relative;overflow:hidden;}
   .wb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
   .wb-card{border:1px solid var(--outline-var);border-radius:var(--r-lg);background:var(--c-lowest);overflow:hidden;box-shadow:var(--shadow-sm);}
   .wb-thumb{height:120px;background:linear-gradient(135deg,#0f3218,#14241b);position:relative;display:flex;align-items:flex-end;padding:12px;}
   .reg{max-width:460px;margin:0 auto;}
-  @media(max-width:820px){.wb-grid{grid-template-columns:1fr;}}
+  @media(max-width:820px){.wb-grid{grid-template-columns:1fr;}.wb-hero .wrap{grid-template-columns:1fr !important;}#types{grid-template-columns:1fr !important;}}
 </style>
 </head>
 <body>
 <div id="nav"></div>
-<section class="wb-hero">
+<section class="wb-hero dark-deep">
   <div class="glow glow-lime" style="width:460px;height:360px;top:-120px;right:-80px;opacity:.3;"></div>
   <div class="wrap" style="position:relative;z-index:1;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;">
     <div>
       <span class="chip" style="background:var(--glass-dark);color:var(--lime);border:1px solid var(--d-outline-strong);"><span class="dot-live"></span>&nbsp;Live every week</span>
-      <h1 class="h-lg" style="margin:16px 0 12px;">Weekly live webinars with experienced educators.</h1>
+      <h1 class="display" style="margin:18px 0 14px;max-width:780px;">Weekly live webinars with experienced educators.</h1>
       <p class="body-lg" style="color:var(--d-ink-var);max-width:480px;">Technical analysis, fundamental analysis, and mindset sessions, every session recorded and saved to your replay library with transcripts and AI summaries.</p>
       <div class="row gap2" style="margin-top:24px;flex-wrap:wrap;">
         <a href="#register" class="btn btn-lime btn-lg">Join a free webinar</a>
@@ -84,7 +84,7 @@ document.getElementById('upcoming').innerHTML = [
   ['Mindset','Beating Revenge Trading','Sofia Marin','Mon · 19:00 GMT','Pro']
 ].map(([type,title,host,when,acc])=>`
   <div class="wb-card card-hover">
-    <div class="wb-thumb"><span class="chip chip-lime">${type}</span></div>
+    <div class="wb-thumb"><span class="chip chip-lime-d">${type}</span></div>
     <div style="padding:18px;">
       <div class="between" style="margin-bottom:6px;"><span style="font-size:12.5px;font-weight:700;color:var(--primary-tint);">${when}</span><span class="chip ${acc==='Free'?'chip-pos':'chip-outline'}">${acc}</span></div>
       <h3 style="font-size:16px;font-weight:700;margin:0 0 6px;">${title}</h3>

@@ -8,7 +8,7 @@
 <script src="../assets/shell.js"></script>
 <script src="../assets/lumina.js"></script>
 <style>
-  .co-top{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;border-bottom:1px solid var(--outline-var);background:var(--surface);}
+  .co-top{min-height:64px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px 20px;border-bottom:1px solid var(--outline-var);background:var(--surface);}
   .co-wrap{max-width:1040px;margin:0 auto;padding:36px 24px 80px;display:grid;grid-template-columns:1fr 360px;gap:40px;align-items:start;}
   .stepper{display:flex;gap:6px;margin-bottom:30px;}
   .stp{flex:1;}
@@ -32,7 +32,7 @@
   .modal-bg{position:fixed;inset:0;background:rgba(10,20,16,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:90;}
   .modal-bg.on{display:flex;}
   .modal{background:var(--c-lowest);border-radius:var(--r-xl);padding:30px;max-width:400px;width:90%;box-shadow:var(--shadow-lg);text-align:center;}
-  @media(max-width:860px){.co-wrap{grid-template-columns:1fr;}.summary{position:static;}}
+  @media(max-width:860px){.co-wrap{grid-template-columns:1fr;}.summary{position:static;}}@media(max-width:480px){.co-wrap{padding:24px 14px 60px;}.grid2,.opt-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>

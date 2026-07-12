@@ -10,7 +10,7 @@
 <style>
   .form-grid{display:grid;grid-template-columns:1fr 320px;gap:22px;align-items:start;max-width:1000px;}
   .panel{background:var(--c-lowest);border:1px solid var(--outline-var);border-radius:var(--r-lg);padding:24px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
-  .ph{font-size:15px;font-weight:700;margin:0 0 18px;}
+  .ph2{font-size:15px;font-weight:700;margin:0 0 18px;}
   .frow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
   .seg{display:flex;gap:6px;}
   .segbtn{flex:1;padding:11px;border-radius:9px;border:1px solid var(--outline-var);background:var(--c-lowest);font-weight:600;font-size:14px;cursor:pointer;text-align:center;transition:.15s;}
@@ -33,7 +33,7 @@
       <div class="form-grid">
         <div>
           <div class="panel">
-            <h3 class="ph">Trade details</h3>
+            <h3 class="ph2">Trade details</h3>
             <div class="frow">
               <div class="field"><label>Pair</label><select class="input" id="pair"><option>EUR/USD</option><option>GBP/USD</option><option>USD/JPY</option><option>XAU/USD</option><option>GBP/JPY</option></select></div>
               <div class="field"><label>Direction</label><div class="seg" id="dir"><div class="segbtn on-long" data-d="long">Long</div><div class="segbtn" data-d="short">Short</div></div></div>
@@ -49,7 +49,7 @@
             </div>
           </div>
           <div class="panel">
-            <h3 class="ph">Review &amp; reflection</h3>
+            <h3 class="ph2">Review &amp; reflection</h3>
             <div class="frow">
               <div class="field"><label>Result</label><select class="input"><option>Open</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></div>
               <div class="field"><label>Emotional state (1–10)</label><input class="input" type="number" value="7" min="1" max="10"></div>

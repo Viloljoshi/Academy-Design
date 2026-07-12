@@ -51,9 +51,12 @@
 
   /* Dark-section tokens (hero / dashboards) */
   --d-bg: #091310;             /* deep charcoal-forest */
+  --d-bg-0: #040a07;           /* deepest field (v3) */
   --d-bg-2: #0f1d16;
   --d-surface: #14241b;        /* card on dark */
   --d-surface-2: #1b3024;
+  --d-layer: rgba(24,42,31,.52);   /* stacked translucent dark layers (v3) */
+  --d-layer-2: rgba(34,58,43,.30);
   --d-ink: #f1f5ef;
   --d-ink-var: #b3c4b8;
   --d-outline: rgba(255,255,255,0.10);
@@ -61,8 +64,17 @@
   --glass-dark: rgba(255,255,255,0.06);
   --glass-dark-2: rgba(255,255,255,0.04);
 
+  /* Liquid-glass material (v3) — gradient fill + lit edge + specular */
+  --liquid-fill: linear-gradient(180deg, rgba(255,255,255,.80), rgba(255,255,255,.44));
+  --liquid-fill-d: linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.035));
+  --liquid-edge: linear-gradient(155deg, rgba(255,255,255,.95), rgba(255,255,255,.30) 42%, rgba(9,19,16,.16) 96%);
+  --liquid-edge-d: linear-gradient(155deg, rgba(255,255,255,.48), rgba(255,255,255,.09) 44%, rgba(0,0,0,.38) 96%);
+  --specular: inset 0 1px 0 rgba(255,255,255,.55);
+  --specular-d: inset 0 1px 0 rgba(255,255,255,.14);
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+
   /* Type families — webfont first, premium system fallback (never serif) */
-  --font-display: 'Hanken Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Hanken Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-body: 'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 
   /* Motion — Apple-like spring-out easing */
@@ -88,6 +100,9 @@
   --shadow: 0 6px 20px rgba(16,33,24,.07), 0 1px 4px rgba(16,33,24,.05);
   --shadow-lg: 0 24px 60px -12px rgba(16,33,24,.18), 0 6px 16px rgba(16,33,24,.06);
   --shadow-dark: 0 32px 70px -16px rgba(0,0,0,.6), 0 6px 18px rgba(0,0,0,.35);
+  /* Elevation ladder (v3): rest → hover → focal float */
+  --shadow-float: 0 40px 90px -24px rgba(4,10,7,.55), 0 12px 30px -12px rgba(4,10,7,.35);
+  --shadow-float-light: 0 36px 80px -28px rgba(16,33,24,.30), 0 10px 26px -14px rgba(16,33,24,.14);
 }
 
 * { box-sizing: border-box; }
@@ -124,10 +139,16 @@ h1,h2,h3,h4,h5 {
 }
 .display {
   font-family: var(--font-display);
-  font-size: clamp(42px, 5.4vw, 66px); font-weight: 700;
+  font-size: clamp(44px, 5.8vw, 72px); font-weight: 700;
   line-height: 1.02; letter-spacing: -.035em; text-wrap: balance;
 }
-.h-lg { font-size: clamp(30px, 3.6vw, 46px); font-weight: 600; line-height: 1.08; letter-spacing: -.028em; text-wrap: balance; }
+/* Oversized Wise-style hero display (v3) */
+.display-xl {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 7.2vw, 96px); font-weight: 800;
+  line-height: .98; letter-spacing: -.038em; text-wrap: balance;
+}
+.h-lg { font-size: clamp(32px, 4vw, 52px); font-weight: 700; line-height: 1.06; letter-spacing: -.03em; text-wrap: balance; }
 .h-md { font-size: clamp(23px, 2.4vw, 31px); font-weight: 600; line-height: 1.16; letter-spacing: -.02em; }
 .h-sm { font-size: 21px; font-weight: 600; line-height: 1.25; letter-spacing: -.015em; }
 .eyebrow { font-family: var(--font-body); font-size: 12px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--primary-tint); }
@@ -193,6 +214,78 @@ h1,h2,h3,h4,h5 {
   backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
 .glass-2 { background: var(--glass-dark-2); border: 1px solid var(--d-outline); }
 
+/* ---------- Liquid glass (v3) ----------
+   Apple-style material: gradient fill (lighter at top) + refractive blur,
+   1px gradient edge (lit top-left, shaded bottom-right) via masked overlay,
+   specular inset, wide float shadow, faint grain to kill banding.
+   `.liquid` for light canvas · `.liquid-d` on dark sections.
+   Use sparingly — glass reads premium only as the exception. */
+.liquid, .liquid-d {
+  position: relative;
+  border: 1px solid transparent;
+  border-radius: var(--r-xl);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  background-clip: padding-box;
+}
+.liquid {
+  background-image: var(--liquid-fill);
+  box-shadow: var(--specular), inset 1px 0 0 rgba(255,255,255,.30),
+              inset -1px -1px 0 rgba(9,19,16,.04), var(--shadow-float-light);
+}
+.liquid-d {
+  background-image: var(--liquid-fill-d);
+  box-shadow: var(--specular-d), inset 1px 0 0 rgba(255,255,255,.07),
+              inset -1px -1px 0 rgba(0,0,0,.30), var(--shadow-float);
+}
+.liquid::before, .liquid-d::before {  /* 1px gradient edge */
+  content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
+  background: var(--liquid-edge);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none; z-index: 1;
+}
+.liquid-d::before { background: var(--liquid-edge-d); }
+.liquid::after, .liquid-d::after {    /* grain — kills banding, adds material */
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background-image: var(--noise); background-size: 140px 140px;
+  opacity: .028; pointer-events: none; mix-blend-mode: overlay;
+}
+.liquid > *, .liquid-d > * { position: relative; z-index: 2; }
+
+/* ---------- Gradient-mesh lighting (v3) ----------
+   Stripe-style ambient glows. Light always comes from the TOP-RIGHT on dark
+   sections so highlights and shadows agree across the page. */
+.mesh { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.mesh-dark {
+  background:
+    radial-gradient(52% 44% at 82% -6%, rgba(195,243,92,.13), transparent 68%),
+    radial-gradient(44% 40% at 96% 34%, rgba(108,158,117,.10), transparent 70%),
+    radial-gradient(60% 50% at 8% 108%, rgba(0,51,21,.45), transparent 72%);
+}
+.mesh-light {
+  background:
+    radial-gradient(46% 40% at 80% 0%, rgba(195,243,92,.14), transparent 66%),
+    radial-gradient(50% 44% at 4% 20%, rgba(196,237,198,.35), transparent 70%);
+}
+.mesh-drift { animation: meshDrift 30s var(--ease-in-out) infinite alternate; will-change: transform; }
+@keyframes meshDrift {
+  from { transform: translate3d(-1.5%, -1%, 0) scale(1); }
+  to   { transform: translate3d(1.5%, 1.2%, 0) scale(1.05); }
+}
+
+/* ---------- Deep dark section (v3) ----------
+   Near-black forest built from stacked layers so light has somewhere to sit.
+   Pair with a .mesh.mesh-dark child for the top-right key light. */
+.dark-deep {
+  position: relative; color: var(--d-ink);
+  background:
+    linear-gradient(180deg, var(--d-layer) 0%, transparent 34%),
+    linear-gradient(0deg, var(--d-layer-2) 0%, transparent 42%),
+    linear-gradient(178deg, #0b1811 0%, #071009 52%, var(--d-bg-0) 100%);
+}
+.dark-deep h1, .dark-deep h2, .dark-deep h3, .dark-deep h4 { color: var(--d-ink); }
+
 /* Metric card */
 .metric { padding: var(--s3); border-radius: var(--r-lg); }
 .metric .label { font-size: 12.5px; font-weight: 600; letter-spacing:.04em; text-transform: uppercase; color: var(--on-surface-var); }
@@ -238,6 +331,55 @@ h1,h2,h3,h4,h5 {
 .glow-lime { background: radial-gradient(circle, rgba(168,214,66,.55), transparent 70%); }
 .glow-leaf { background: radial-gradient(circle, rgba(108,158,117,.45), transparent 70%); }
 
+/* ---------- Media placeholder (v3) ----------
+   Branded poster-frame for assets that don't exist yet. Wraps a real
+   <img data-src> / <video> / <iframe> — swapping in the asset later is a
+   one-line change (drop the URL in; it covers the frame automatically). */
+.ph {
+  position: relative; overflow: hidden; border-radius: var(--r-lg);
+  aspect-ratio: 16 / 9; width: 100%;
+  background:
+    radial-gradient(60% 60% at 82% -8%, rgba(195,243,92,.12), transparent 68%),
+    radial-gradient(50% 55% at 12% 110%, rgba(0,51,21,.5), transparent 70%),
+    linear-gradient(168deg, #102017 0%, #0a1510 58%, #060d09 100%);
+  border: 1px solid var(--d-outline);
+  box-shadow: var(--specular-d), 0 18px 44px -18px rgba(4,10,7,.5);
+  display: grid; place-items: center; color: var(--d-ink);
+}
+.ph-phone { aspect-ratio: 9 / 18.5; max-width: 300px; border-radius: var(--r-xl); }
+.ph > img, .ph > video, .ph > iframe {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; border: 0; z-index: 2;
+}
+.ph > img:not([src]), .ph > img[src=""] { display: none; }  /* poster shows until URL drops in */
+.ph-chrome {  /* faint device chrome */
+  position: absolute; top: 0; left: 0; right: 0; height: 34px; z-index: 3;
+  display: flex; align-items: center; gap: 6px; padding: 0 14px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
+}
+.ph-chrome i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.16); }
+.ph-play {
+  position: relative; z-index: 3;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 13.5px; font-weight: 700; color: var(--d-ink);
+  padding: 11px 20px 11px 13px; border-radius: var(--r-full);
+  background: var(--liquid-fill-d);
+  -webkit-backdrop-filter: blur(14px) saturate(150%); backdrop-filter: blur(14px) saturate(150%);
+  border: 1px solid var(--d-outline-strong);
+  box-shadow: var(--specular-d), 0 10px 30px -8px rgba(0,0,0,.5);
+  transition: transform .25s var(--ease), border-color .2s;
+}
+.ph:hover .ph-play { transform: scale(1.04); border-color: rgba(195,243,92,.45); }
+.ph-play .tri {
+  width: 34px; height: 34px; border-radius: 50%; flex: none;
+  background: var(--lime); color: var(--on-lime); display: grid; place-items: center;
+}
+.ph-label {
+  position: absolute; left: 14px; bottom: 12px; z-index: 3;
+  font-size: 12px; font-weight: 600; color: var(--d-ink-var); letter-spacing: .02em;
+}
+
 /* ---------- Utilities ---------- */
 .dark-sec { background: var(--d-bg); color: var(--d-ink); position: relative; }
 .dark-sec h1,.dark-sec h2,.dark-sec h3,.dark-sec h4 { color: var(--d-ink); }
@@ -268,9 +410,129 @@ h1,h2,h3,h4,h5 {
 .reveal-stagger.armed.in > *:nth-child(6){ transition-delay:.40s }
 .reveal-stagger.armed.in > *:nth-child(n+7){ transition-delay:.48s }
 
+/* ---------- Unify scroll set-piece (v3) ----------
+   Sticky liquid-glass frame pinned while pillar steps scroll past.
+   JS (FX.unify) toggles .active on rail items and .show on panels —
+   one clean cross-fade per pillar, ~500ms, nothing frantic.
+   Mobile (<960px) and reduced-motion: plain vertical stack, no pinning. */
+.unify-grid { display: grid; grid-template-columns: minmax(280px, .8fr) minmax(0, 1.35fr); gap: 56px; align-items: start; }
+.unify-rail { display: flex; flex-direction: column; }
+.unify-step { padding: 26px 4px 26px 22px; border-left: 1px solid var(--d-outline); position: relative; }
+.unify-step::before {  /* progress tick */
+  content: ""; position: absolute; left: -1px; top: 0; bottom: 0; width: 2px;
+  background: var(--lime); transform: scaleY(0); transform-origin: top;
+  transition: transform .5s var(--ease);
+}
+.unify-step.active::before { transform: scaleY(1); }
+.unify-step .u-kicker { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--d-ink-var); opacity: .7; transition: color .4s, opacity .4s; }
+.unify-step h3 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin: 8px 0 6px; color: var(--d-ink-var); transition: color .4s var(--ease); }
+.unify-step p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--d-ink-var); opacity: .6; transition: opacity .4s; }
+.unify-step.active .u-kicker { color: var(--lime); opacity: 1; }
+.unify-step.active h3 { color: var(--d-ink); }
+.unify-step.active p { opacity: 1; }
+.unify-stage { position: sticky; top: 96px; }
+.unify-frame { position: relative; overflow: hidden; }
+.unify-frame .u-viewport { position: relative; aspect-ratio: 16 / 10.4; }
+.unify-panel {
+  /* transform/opacity ONLY — filter transitions on panels this large repaint
+     every frame and stutter the whole sticky section */
+  position: absolute; inset: 0; opacity: 0; transform: translateY(26px) scale(.965);
+  transition: opacity .55s var(--ease), transform .55s var(--ease);
+  pointer-events: none; will-change: opacity, transform;
+}
+.unify-panel.show { opacity: 1; transform: none; pointer-events: auto; }
+.unify-frame .u-viewport { contain: layout paint; }
+/* Sticky frame: backdrop-filter re-samples on every scroll frame — swap it
+   for an equivalent layered fill. Edge + grain from .liquid-d still apply. */
+.unify-frame.liquid-d {
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  background: linear-gradient(180deg, rgba(30,50,38,.72), rgba(12,23,17,.9));
+}
+/* content choreography: children settle in sequence once the panel lands */
+.unify-panel .u-app > * { opacity: 0; transform: translateY(14px); transition: opacity .5s var(--ease), transform .5s var(--ease); }
+.unify-panel.show .u-app > * { opacity: 1; transform: none; }
+.unify-panel.show .u-app > *:nth-child(1) { transition-delay: .12s; }
+.unify-panel.show .u-app > *:nth-child(2) { transition-delay: .22s; }
+.unify-panel.show .u-app > *:nth-child(3) { transition-delay: .32s; }
+.unify-panel.show .u-app > *:nth-child(4) { transition-delay: .4s; }
+@media (max-width: 960px) {
+  .unify-grid { grid-template-columns: 1fr; gap: 20px; }
+  .unify-stage { position: static; display: none; }        /* each step carries its own frame */
+  .unify-step { border-left: 0; padding: 18px 0 6px; }
+  .unify-step::before { display: none; }
+  .unify-step .u-kicker { color: var(--lime); opacity: 1; }
+  .unify-step h3 { color: var(--d-ink); }
+  .unify-step p { opacity: 1; }
+  .unify-step .u-mobile-frame { display: block; margin-top: 16px; }
+}
+@media (min-width: 961px) { .unify-step .u-mobile-frame { display: none; } }
+
 /* On-load settle (transform only — never hides, so always flash-free) */
 .fade-up { animation: fadeUpSettle .7s var(--ease) both; }
 @keyframes fadeUpSettle { from{ transform: translateY(12px) } to{ transform: none } }
+/* Staggered hero entrance used by the auto-motion layer */
+@keyframes riseIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Motion layer (v4) ---------- */
+
+/* Word choreography — rise + de-blur, 55ms stagger (spans built by FX.words) */
+.words .w {
+  display: inline-block; opacity: 0;
+  transform: translateY(.55em); filter: blur(10px);
+  animation: wordIn .8s var(--ease) forwards;
+  animation-delay: calc(var(--i) * 55ms + var(--word-delay, 0ms));
+}
+@keyframes wordIn { to { opacity: 1; transform: none; filter: blur(0); } }
+/* Scroll-triggered variant: silent until the reveal engine flips .in */
+.reveal-words.armed .w { animation: none; }
+.reveal-words.armed.in .w { animation: wordIn .8s var(--ease) forwards; animation-delay: calc(var(--i) * 50ms); }
+
+/* Candles — each grows from its baseline, staggered */
+.cndl { transform-box: fill-box; transform-origin: center bottom; animation: cndlIn .55s var(--ease) both; animation-delay: var(--d, 0ms); }
+@keyframes cndlIn { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
+.px-dot { animation: pxPulse 2.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes pxPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .55; transform: scale(1.7); } }
+
+/* CTA sheen — one light sweep every ~6s (put on ONE button per viewport) */
+.btn-sheen { position: relative; overflow: hidden; }
+.btn-sheen::after {
+  content: ""; position: absolute; top: -20%; bottom: -20%; width: 34%; left: -60%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,.55), transparent);
+  transform: skewX(-18deg); animation: sheen 6s var(--ease-in-out) infinite;
+}
+@keyframes sheen { 0%, 74% { left: -60%; } 90%, 100% { left: 140%; } }
+
+/* Glare — pointer-tracked highlight (FX.tilt feeds --gx/--gy) */
+.glare::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3;
+  background: radial-gradient(340px circle at var(--gx, 70%) var(--gy, 20%), rgba(255,255,255,.09), transparent 60%);
+}
+
+/* Aurora — layered light field that slowly breathes behind heroes/posters */
+.aurora { position: absolute; inset: -18%; pointer-events: none; filter: blur(34px); opacity: .8;
+  background:
+    radial-gradient(36% 40% at 70% 18%, rgba(195,243,92,.13), transparent 66%),
+    radial-gradient(28% 34% at 86% 58%, rgba(108,158,117,.11), transparent 70%),
+    radial-gradient(44% 48% at 16% 84%, rgba(0,72,32,.28), transparent 72%);
+  animation: aurora 26s var(--ease-in-out) infinite alternate; will-change: transform;
+}
+@keyframes aurora {
+  from { transform: translate3d(-2.5%,-1.5%,0) rotate(-1.5deg) scale(1.02); }
+  to   { transform: translate3d(2.5%,2%,0) rotate(1.5deg) scale(1.09); }
+}
+
+/* Market ticker — infinite marquee, pauses on hover */
+.tickerbar { overflow: hidden; position: relative; border-top: 1px solid var(--d-outline); background: rgba(0,0,0,.25); }
+.tickerbar .tk { display: flex; gap: 48px; width: max-content; padding: 13px 0; animation: tickerScroll 42s linear infinite; will-change: transform; }
+.tickerbar:hover .tk { animation-play-state: paused; }
+.tk-item { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: var(--d-ink-var); white-space: nowrap; }
+.tk-item b { color: var(--d-ink); font-family: var(--font-display); letter-spacing: -.01em; }
+.tk-item .num { font-variant-numeric: tabular-nums; }
+@keyframes tickerScroll { to { transform: translateX(-50%); } }
+
+/* Scroll progress — hairline lime at the very top */
+.scroll-progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 200;
+  background: linear-gradient(90deg, var(--lime-dim), var(--lime)); transform: scaleX(0); transform-origin: left; pointer-events: none; }
 
 /* Ambient hero motion graphics */
 .floaty { animation: floaty 7s var(--ease-in-out) infinite; }
@@ -283,8 +545,21 @@ h1,h2,h3,h4,h5 {
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
   .reveal.armed, .reveal-fade.armed, .reveal-stagger.armed > * { opacity:1 !important; transform:none !important; }
-  .fade-up, .floaty, .glow-pulse { animation: none !important; }
+  .fade-up, .floaty, .glow-pulse, .mesh-drift, .aurora, .btn-sheen::after,
+  .cndl, .px-dot, .tickerbar .tk { animation: none !important; }
+  .words .w, .reveal-words.armed .w { opacity: 1 !important; transform: none !important; filter: none !important; animation: none !important; }
+  .cndl { transform: none !important; opacity: 1 !important; }
+  .unify-panel { filter: none !important; }
+  .unify-panel .u-app > * { opacity: 1 !important; transform: none !important; }
+  .scroll-progress { display: none !important; }
   .draw-line { stroke-dashoffset: 0 !important; animation: none !important; }
+  /* Unify set-piece degrades to a static stack — every panel visible, no pinning */
+  .unify-stage { position: static !important; display: none !important; }
+  .unify-step .u-mobile-frame { display: block !important; margin-top: 16px; }
+  .unify-step::before { display: none !important; }
+  .unify-step .u-kicker { color: var(--lime) !important; opacity: 1 !important; }
+  .unify-step h3 { color: var(--d-ink) !important; }
+  .unify-step p { opacity: 1 !important; }
 }
 
 /* Scrollbar */

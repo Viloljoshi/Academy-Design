@@ -10,7 +10,7 @@
 <style>
   .lesson-wrap{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start;}
   .player{background:#06100b;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--d-outline);}
-  .stage{aspect-ratio:16/9;background:radial-gradient(circle at 50% 40%,#14241b,#06100b);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;}
+  .stage{aspect-ratio:16/9;background:radial-gradient(circle at 50% 40%,rgba(20,36,27,.55),rgba(6,16,11,.82)),url('../assets/media/poster-platform.webp') center/cover;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;}
   .playbtn{width:74px;height:74px;border-radius:50%;background:var(--lime);color:var(--on-lime);display:grid;place-items:center;box-shadow:0 8px 30px rgba(168,214,66,.5);transition:.2s;}
   .stage:hover .playbtn{transform:scale(1.07);}
   .ctrlbar{display:flex;align-items:center;gap:14px;padding:12px 16px;background:#0a1410;color:var(--d-ink);font-size:13px;}
@@ -54,6 +54,8 @@
             <div class="stage" id="stage" onclick="playToggle()">
               <div class="playbtn" id="playbtn"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
               <div style="position:absolute;top:14px;left:16px;" id="bufferChip"></div>
+              <span style="position:absolute;left:16px;bottom:12px;font-size:12px;font-weight:600;color:var(--d-ink-var);">Lesson video · asset coming soon</span>
+              <!-- swap in the real asset later: <video src="" poster=""></video> -->
             </div>
             <div class="ctrlbar">
               <span class="ctrl-ic" onclick="playToggle()" id="ppIcon"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
@@ -180,7 +182,7 @@ function answer(eln,i){
 }
 setTab(document.querySelectorAll('.ltab')[0],'transcript');
 
-function complete(){ document.getElementById('done').classList.add('on'); confetti(); }
+function complete(){ document.getElementById('done').classList.add('on'); }
 document.getElementById('done').addEventListener('click',e=>{ if(e.target.id==='done') e.currentTarget.classList.remove('on'); });
 
 // AI tutor canned responses
@@ -210,8 +212,6 @@ function ask(text){
   },650);
 }
 
-function confetti(){ const colors=['#c3f35c','#a8d642','#6c9e75','#ffffff']; for(let i=0;i<40;i++){ const c=document.createElement('div'); c.style.cssText=`position:fixed;top:0;left:${Math.random()*100}vw;width:8px;height:13px;background:${colors[i%4]};z-index:99;border-radius:${Math.random()>.5?'50%':'2px'};animation:fall ${2+Math.random()*2}s linear ${Math.random()}s forwards;`; document.body.appendChild(c); setTimeout(()=>c.remove(),4500);} }
-const st=document.createElement('style'); st.textContent='@keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:0}}'; document.head.appendChild(st);
 </script>
 </body>
 </html>

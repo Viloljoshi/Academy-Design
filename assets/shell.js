@@ -10,7 +10,7 @@
       const pc1 = document.createElement('link'); pc1.rel='preconnect'; pc1.href='https://fonts.googleapis.com';
       const pc2 = document.createElement('link'); pc2.rel='preconnect'; pc2.href='https://fonts.gstatic.com'; pc2.crossOrigin='anonymous';
       const css = document.createElement('link'); css.rel='stylesheet';
-      css.href='https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap';
+      css.href='https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap';
       head.append(pc1, pc2, css);
     } catch(e){}
   })();
@@ -55,8 +55,30 @@
       </div>
     </header>
     <style>
-      .pubnav{background:rgba(251,252,248,.78);backdrop-filter:blur(18px);border-bottom:1px solid rgba(110,117,109,.12);}
-      .pubnav-inner{display:flex;align-items:center;justify-content:space-between;height:78px;gap:18px;position:relative;}
+      .pubnav{background:linear-gradient(180deg,rgba(253,254,250,.6),rgba(249,251,245,.42));-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);border-bottom:1px solid rgba(110,117,109,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.5);transition:background .4s var(--ease),border-color .4s var(--ease),box-shadow .4s var(--ease);}
+      .pubnav-inner{display:flex;align-items:center;justify-content:space-between;height:78px;gap:18px;position:relative;border:1px solid transparent;border-radius:9999px;padding:0 4px;transition:height .45s var(--ease),margin .45s var(--ease),padding .45s var(--ease),background .45s var(--ease),border-color .45s var(--ease),box-shadow .45s var(--ease),border-radius .45s var(--ease);}
+      /* Floating pill state — the bar detaches into a curved glass capsule.
+         position:fixed (not sticky) — the injected #nav container has no height
+         to stick within, so sticky never followed the scroll. */
+      .pubnav.float{position:fixed;top:0;left:0;right:0;z-index:60;background:transparent;border-bottom-color:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;animation:navDrop .55s var(--ease);}
+      @keyframes navDrop{from{transform:translateY(-110%);}to{transform:none;}}
+      .pubnav.float .pubnav-inner{height:60px;width:max-content;max-width:calc(100vw - 28px);margin:12px auto 6px;gap:28px;padding:0 8px 0 18px;}
+      .pubnav.float .pubnav-links{flex:none;}
+      .pubnav.float .pubnav-inner{
+        /* iOS dark material: enough tint that white ink ALWAYS reads,
+           heavy blur + backdrop dimming keep it clearly glass */
+        background:linear-gradient(180deg,rgba(16,26,20,.58),rgba(8,14,11,.52));
+        -webkit-backdrop-filter:blur(36px) saturate(180%) brightness(.85);backdrop-filter:blur(36px) saturate(180%) brightness(.85);
+        border-color:rgba(255,255,255,.18);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(0,0,0,.12), 0 18px 44px -18px rgba(4,10,7,.4);}
+      .pubnav.float .pubnav-link{color:rgba(248,251,246,.95);}
+      /* light ink with a whisper of shadow so it reads on any background */
+      .pubnav.float .pubnav-link{color:rgba(244,248,242,.9);text-shadow:0 1px 2px rgba(4,10,7,.35);}
+      .pubnav.float .pubnav-link:hover{background:rgba(255,255,255,.12);color:#fff;}
+      .pubnav.float .pubnav-links .pubnav-link.active{background:rgba(255,255,255,.16);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25);border-color:rgba(255,255,255,.2);text-shadow:none;}
+      .pubnav.float .fx-logo > span:last-child{color:#f1f5ef !important;text-shadow:0 1px 2px rgba(4,10,7,.35);}
+      .pubnav.float .pubnav-burger{color:#f1f5ef;}
+      @media(prefers-reduced-motion:reduce){.pubnav,.pubnav-inner{transition:none;}}
       .pubnav-links{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;}
       .pubnav-link{font-size:13px;font-weight:700;color:var(--on-surface-var);padding:10px 14px;border-radius:9999px;transition:.15s;}
       .pubnav-link:hover{background:rgba(15,50,24,.05);color:var(--on-surface);}
@@ -86,8 +108,13 @@
     ];
     return `
     <footer class="dark-sec" style="padding:64px 0 40px;">
+      <style>
+        .foot-grid{display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:32px;}
+        @media(max-width:900px){.foot-grid{grid-template-columns:1fr 1fr;}}
+        @media(max-width:480px){.foot-grid{grid-template-columns:1fr;}}
+      </style>
       <div class="wrap">
-        <div style="display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:32px;">
+        <div class="foot-grid">
           <div>
             ${logo('light',28)}
             <p class="muted" style="color:var(--d-ink-var);margin:18px 0 0;max-width:240px;font-size:14px;">Structured forex education, live guidance, AI support, and built-in trading tools, in one disciplined platform.</p>
@@ -169,6 +196,13 @@
       .avatar{width:38px;height:38px;border-radius:9999px;background:linear-gradient(150deg,#0f3218,#436648);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px;}
       .ndot{position:absolute;top:7px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--lime-dim);border:2px solid var(--c-lowest);}
       @media(max-width:980px){.app{grid-template-columns:1fr;}.app-side{display:none;}}
+      @media(max-width:640px){
+        .app-top{padding:0 16px;gap:10px;}
+        .app-top > .row.gap2:first-child{flex:1;min-width:0;}
+        .topsearch{min-width:0;flex:1;}
+        .topsearch kbd{display:none;}
+        .app-body{padding:18px 16px;}
+      }
     </style>`;
   }
 
@@ -191,6 +225,25 @@
       </div>
     </div>`;
   }
+
+  // Floating-pill header: after 70px of scroll the sticky bar morphs into a
+  // curved glass capsule (Jeton-style) and morphs back at the top.
+  (function floatNav(){
+    var raf = null, h = 0;
+    function frame(){
+      raf = null;
+      var nav = document.querySelector('.pubnav');
+      if(!nav) return;
+      var on = window.scrollY > 70;
+      if(on && !h) h = nav.offsetHeight;
+      // placeholder height on the host so content doesn't jump when the bar
+      // leaves the flow
+      if(nav.parentElement) nav.parentElement.style.minHeight = on ? h+'px' : '';
+      nav.classList.toggle('float', on);
+    }
+    addEventListener('scroll', function(){ if(!raf) raf = requestAnimationFrame(frame); }, {passive:true});
+    document.addEventListener('DOMContentLoaded', frame);
+  })();
 
   w.FXShell = { logo, publicNav, footer, appSidebar, appStyles, appTop, ic };
 

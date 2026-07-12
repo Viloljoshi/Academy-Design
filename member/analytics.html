@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="../assets/lumina.css">
 <script src="../assets/shell.js"></script>
 <script src="../assets/lumina.js"></script>
+<script src="../assets/seed.js"></script>
 <style>
   .sum{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px;}
   .sc{background:var(--c-lowest);border:1px solid var(--outline-var);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow-sm);}
@@ -15,10 +16,12 @@
   .sc .d{font-size:12px;font-weight:700;margin-top:3px;}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
   .panel{background:var(--c-lowest);border:1px solid var(--outline-var);border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow-sm);}
-  .ph{font-size:15px;font-weight:700;margin-bottom:2px;}
+  .ph2{font-size:15px;font-weight:700;margin-bottom:2px;}
   .insight{display:flex;gap:12px;padding:14px;border-radius:var(--r);background:var(--c-low);}
   .insight .dot{width:8px;height:8px;border-radius:50%;background:var(--lime-dim);margin-top:6px;flex:none;}
   @media(max-width:1100px){.sum{grid-template-columns:repeat(3,1fr);}.grid2{grid-template-columns:1fr;}}
+  @media(max-width:900px){.panel .grid{grid-template-columns:1fr !important;}}
+  @media(max-width:560px){.sum{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
 <body>
@@ -48,32 +51,46 @@ if(plan==='basic'){
     <div style="padding:24px;"><a href="../public/pricing.html" class="btn btn-lime btn-block btn-lg">Upgrade to Pro</a></div>
   </div>`;
 } else {
+  const D = FXData, S90 = D.stats.last90, S30 = D.stats.last30;
+  const bestSession = D.bySession.slice().sort((a,b)=>b.winRate-a.winRate)[0];
+  const bestSetup = D.bySetup.slice().sort((a,b)=>b.netR-a.netR)[0];
+  const fri = D.byDow.find(d=>d.key==='Fri');
+  const avgRisk = (D.trades.reduce((a,t)=>a+t.riskPct,0)/D.trades.length).toFixed(1);
+  const d30 = S30.winRate - S90.winRate;
   body.innerHTML = `
   <div class="between" style="flex-wrap:wrap;gap:12px;margin-bottom:20px;">
-    <div><h1 class="h-md" style="margin:0;">Performance Analytics</h1><p class="muted" style="margin:4px 0 0;">42 trades analyzed · last 90 days</p></div>
+    <div><h1 class="h-md" style="margin:0;">Performance Analytics</h1><p class="muted" style="margin:4px 0 0;">${S90.n} trades analyzed · last 90 days</p></div>
     <select class="input" style="width:auto;padding:9px 14px;"><option>Last 90 days</option><option>Last 30 days</option><option>This year</option></select>
   </div>
   <div class="sum">
-    ${[['Win rate','58%','+4%','delta-pos'],['Avg R','1.9R','+0.2','delta-pos'],['Net R','+74R','','' ],['Avg risk','1.1%','','' ],['Trades','42','','' ],['Consistency','B+','','text-pos']].map(([l,v,d,c])=>`<div class="sc"><div class="l">${l}</div><div class="v ${c==='text-pos'?'text-pos':''}">${v}</div>${d?`<div class="d ${c}">${d}</div>`:''}</div>`).join('')}
+    ${[['Win rate',S90.winRate+'%',(d30>=0?'+':'')+d30+'% · 30d','delta-'+(d30>=0?'pos':'neg')],
+       ['Avg planned R',S90.avgRR+'R','',''],
+       ['Net R',(S90.netR>0?'+':'')+S90.netR+'R','','text-pos'],
+       ['Avg risk',avgRisk+'%','',''],
+       ['Trades',S90.n,'',''],
+       ['Consistency','B+','','text-pos']].map(([l,v,d,c])=>`<div class="sc"><div class="l">${l}</div><div class="v num ${c==='text-pos'?'text-pos':''}">${v}</div>${d?`<div class="d ${c}">${d}</div>`:''}</div>`).join('')}
   </div>
   <div class="grid2" style="margin-bottom:20px;">
-    <div class="panel"><div class="ph">Net R over time</div><p class="muted" style="font-size:12.5px;margin:0 0 10px;">Cumulative R multiple</p><div id="equity" style="height:200px;"></div></div>
-    <div class="panel"><div class="ph">Win rate by session</div><p class="muted" style="font-size:12.5px;margin:0 0 10px;">London is your strongest window</p><div id="session"></div></div>
+    <div class="panel"><div class="ph2">Net R over time</div><p class="muted" style="font-size:12.5px;margin:0 0 10px;">Cumulative R multiple · all logged trades</p><div id="equity" style="height:200px;"></div></div>
+    <div class="panel"><div class="ph2">Win rate by session</div><p class="muted" style="font-size:12.5px;margin:0 0 10px;">${bestSession.key} is your strongest window</p><div id="session"></div></div>
   </div>
   <div class="grid2" style="margin-bottom:20px;">
-    <div class="panel"><div class="ph">By day of week</div><p class="muted" style="font-size:12.5px;margin:0 0 10px;">Friday win rate sits well below your average</p><div id="dow"></div></div>
-    <div class="panel"><div class="ph">By setup</div><p class="muted" style="font-size:12.5px;margin:0 0 10px;">Average R per strategy</p><div id="setup"></div></div>
+    <div class="panel"><div class="ph2">By day of week</div><p class="muted" style="font-size:12.5px;margin:0 0 10px;">Friday win rate sits well below your average</p><div id="dow"></div></div>
+    <div class="panel"><div class="ph2">Net R by strategy</div><p class="muted" style="font-size:12.5px;margin:0 0 10px;">Last 90 days</p><div id="setup"></div></div>
   </div>
   <div class="panel">
-    <div class="row gap2" style="margin-bottom:14px;"><span style="width:30px;height:30px;border-radius:8px;background:rgba(168,214,66,.15);display:grid;place-items:center;color:var(--lime-dim);flex:none;">✦</span><div class="ph" style="margin:0;">AI insights</div></div>
+    <div class="row gap2" style="margin-bottom:14px;"><span style="width:30px;height:30px;border-radius:8px;background:rgba(168,214,66,.15);display:grid;place-items:center;color:var(--lime-dim);flex:none;">✦</span><div class="ph2" style="margin:0;">AI insights</div></div>
     <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:14px;">
-      ${[['You perform best during the London session, with a 71% win rate and 2.1R average.'],['Your losses cluster when you take more than 3 trades in a day, often after a loss.'],['Best setup: Breakout Retest at 1.8R average across 14 trades. Lean into it.']].map(([t])=>`<div class="insight"><span class="dot"></span><p style="margin:0;font-size:13.5px;line-height:1.5;">${t}</p></div>`).join('')}
+      ${[[`You perform best during the ${bestSession.key} session: ${bestSession.winRate}% win rate across ${bestSession.n} trades.`],
+         [`Friday is your leak: ${fri.winRate}% win rate vs your ${S90.winRate}% average. Most losses follow an earlier loss the same day.`],
+         [`Best strategy: ${bestSetup.key} at ${(bestSetup.netR>0?'+':'')}${bestSetup.netR}R over ${bestSetup.n} trades. Lean into it.`]].map(([t])=>`<div class="insight"><span class="dot"></span><p style="margin:0;font-size:13.5px;line-height:1.5;">${t}</p></div>`).join('')}
     </div>
+    <p class="muted" style="font-size:12px;margin:14px 0 0;">Educational data · not investment advice.</p>
   </div>`;
-  FX.areaChart(document.getElementById('equity'), {data:[0,2,1.4,3.8,3,5.6,5,8.2,7.6,11,10.2,14,16.4,15.6,19,22,21,26,30,28,34,38], height:200, color:'#a8d642'});
-  FX.barChart(document.getElementById('session'), {data:[{label:'Asia',value:44,color:'#6c9e75'},{label:'London',value:71},{label:'New York',value:61},{label:'Overlap',value:55}], height:170, max:100});
-  FX.barChart(document.getElementById('dow'), {data:[{label:'Mon',value:55},{label:'Tue',value:62},{label:'Wed',value:64},{label:'Thu',value:60},{label:'Fri',value:38,color:'#ba1a1a'}], height:170, max:100});
-  FX.barChart(document.getElementById('setup'), {data:[{label:'Breakout',value:1.8},{label:'Sweep',value:1.4},{label:'Trend',value:1.6},{label:'Range',value:0.6,color:'#e0a235'},{label:'Bounce',value:1.2}], height:170});
+  FX.areaChart(document.getElementById('equity'), {data:D.equity, height:200, color:'#a8d642'});
+  FX.barChart(document.getElementById('session'), {data:D.bySession.map(s=>({label:s.key, value:s.winRate, color:s.key===bestSession.key?undefined:'#6c9e75'})), height:170, max:100});
+  FX.barChart(document.getElementById('dow'), {data:D.byDow.map(d=>({label:d.key, value:Math.max(d.winRate,2), color:d.key==='Fri'?'#ba1a1a':undefined})), height:170, max:100});
+  FX.barChart(document.getElementById('setup'), {data:D.bySetup.map(s=>({label:s.key.split(' ')[0], value:s.netR, color:s.netR<0?'#ba1a1a':undefined})), height:170});
 }
 </script>
 </body>

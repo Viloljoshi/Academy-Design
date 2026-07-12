@@ -8,10 +8,10 @@
 <script src="../assets/shell.js"></script>
 <script src="../assets/lumina.js"></script>
 <style>
-  .price-hero{background:var(--d-bg);color:var(--d-ink);padding:56px 0 120px;position:relative;overflow:hidden;text-align:center;}
+  .price-hero{padding:72px 0 130px;position:relative;overflow:hidden;text-align:center;}
   .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;max-width:1080px;margin:-90px auto 0;position:relative;z-index:2;align-items:start;}
   .plan{background:var(--c-lowest);border:1px solid var(--outline-var);border-radius:var(--r-xl);padding:30px;box-shadow:var(--shadow);}
-  .plan.hero{border:2px solid var(--lime-dim);box-shadow:var(--shadow-lg);}
+  .plan.hero{border:0;transform:translateY(-10px);}
   .plan .price{font-family:var(--font-display);font-weight:800;font-size:48px;letter-spacing:-.02em;line-height:1;margin:14px 0 4px;}
   .feat{display:flex;gap:10px;align-items:flex-start;font-size:14px;padding:7px 0;}
   .feat svg{flex:none;color:var(--pos);margin-top:2px;}
@@ -32,11 +32,11 @@
 <body>
 <div id="nav"></div>
 
-<section class="price-hero">
-  <div class="glow glow-lime" style="width:520px;height:380px;top:-120px;left:50%;transform:translateX(-50%);opacity:.32;"></div>
+<section class="price-hero dark-deep">
+  <div class="mesh mesh-dark"></div>
   <div class="wrap" style="position:relative;z-index:1;">
-    <span class="chip" style="background:var(--glass-dark);color:var(--lime);border:1px solid var(--d-outline-strong);">Transparent pricing · Cancel anytime</span>
-    <h1 class="h-lg" style="margin:18px 0 10px;">Choose the plan that matches your stage.</h1>
+    <span class="chip" style="background:var(--glass-dark);color:var(--d-ink);border:1px solid var(--d-outline-strong);">Transparent pricing · Cancel anytime</span>
+    <h1 class="display" style="margin:20px 0 12px;">Choose the plan that<br>matches your stage.</h1>
     <p class="body-lg" style="color:var(--d-ink-var);max-width:520px;margin:0 auto 24px;">Start with the fundamentals or unlock the full system. Upgrade or downgrade anytime, and your progress is always preserved.</p>
     <div class="toggle"><button class="on" id="tMonthly">Monthly</button><button id="tYearly">Yearly · save 20%</button></div>
     <div id="banner"></div>
@@ -95,9 +95,8 @@ function ctaFor(p){
 let yearly=false;
 function render(){
   document.getElementById('plans').innerHTML = plans.map(p=>`
-    <div class="plan ${p.hero?'hero':''}">
-      ${p.hero?'<div style="text-align:center;margin:-30px -30px 22px;padding:9px;background:var(--lime);color:var(--on-lime);font-weight:800;font-size:13px;border-radius:22px 22px 0 0;letter-spacing:.03em;">★ MOST POPULAR</div>':''}
-      <div class="between"><div class="eyebrow" style="${p.hero?'color:var(--primary)':''}">${p.name}</div>${p.soon?'<span class="chip chip-warn">Coming soon</span>':''}</div>
+    <div class="plan ${p.hero?'hero liquid':''}">
+      <div class="between"><div class="eyebrow" style="${p.hero?'color:var(--primary)':''}">${p.name}</div>${p.hero?'<span class="chip chip-lime">★ Most popular</span>':p.soon?'<span class="chip chip-warn">Coming soon</span>':''}</div>
       <div class="price num">${p.soon
         ? '<span style="font-size:20px;font-weight:600;color:var(--on-surface-var);vertical-align:middle;margin-right:4px;">From</span>$'+p.m+'<span style="font-size:16px;color:var(--on-surface-var);font-weight:500;">/mo</span>'
         : '$'+(yearly?p.y:p.m)+'<span style="font-size:16px;color:var(--on-surface-var);font-weight:500;">/mo</span>'}</div>
