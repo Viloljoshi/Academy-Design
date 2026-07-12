@@ -577,7 +577,8 @@ h1,h2,h3,h4,h5 {
 .fx-stat { flex: 1; min-width: 140px; padding: 22px 26px; text-align: center;
   border-right: 1px solid rgba(255,255,255,.07); }
 .fx-stat:last-child { border-right: 0; }
-.fx-stat b { display: block; font-family: var(--font-display); font-weight: 800;
+.fx-stat b { display: flex; align-items: baseline; justify-content: center; gap: 1px;
+  white-space: nowrap; font-family: var(--font-display); font-weight: 800;
   font-size: 30px; letter-spacing: -.02em; color: var(--d-ink); font-variant-numeric: tabular-nums; }
 .fx-stat b .suf { font-size: 17px; color: var(--lime); }
 .fx-stat span { display: block; margin-top: 5px; font-size: 11px; font-weight: 700;
