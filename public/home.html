@@ -40,8 +40,15 @@
   .hero-stage{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;padding:130px 0 44px;}
   .hero-top{margin-bottom:auto;}
   .hero-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:48px;flex-wrap:wrap;}
-  .hero-h1{font-size:clamp(54px,8.4vw,120px);line-height:.96;max-width:11ch;margin:0;}
+  .hero-h1{font-size:clamp(54px,8.4vw,120px);line-height:.96;max-width:11ch;margin:0;position:relative;}
   .hero-h1 .hl{color:var(--lime);}
+  /* auto-type: ghost keeps the final layout, live layer types over it */
+  .type-ghost{visibility:hidden;}
+  .type-live{position:absolute;inset:0;}
+  .type-caret{display:inline-block;width:.07em;height:.8em;background:var(--lime);border-radius:3px;
+    margin-left:.06em;vertical-align:-.03em;transition:opacity .6s var(--ease);}
+  .type-caret.blink{animation:caretBlink 1.06s steps(2,start) infinite;}
+  @keyframes caretBlink{50%{opacity:0;}}
   /* dark glass card: guaranteed readable over the brightest swarm */
   .hero-side{max-width:352px;display:flex;flex-direction:column;gap:18px;position:relative;
     padding:24px 26px;border-radius:24px;
@@ -607,7 +614,39 @@ document.getElementById('testi').innerHTML = [
   })();
 })();
 
-FX.words(document.getElementById('heroH1'));
+// Apple-style auto-type headline: caret types the line with human cadence,
+// the invisible ghost keeps the final layout so nothing shifts while typing.
+(function typeHero(){
+  var h1 = document.getElementById('heroH1'); if(!h1) return;
+  h1.dataset.split = 1;                                     // opt out of the word-reveal layer
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;   // static headline
+  var segs = [['Master forex with ', ''], ['method,', 'hl'], [' not hype.', '']];
+  h1.setAttribute('aria-label', segs.map(function(s){ return s[0]; }).join(''));
+  h1.innerHTML = '<span class="type-ghost" aria-hidden="true">' + h1.innerHTML + '</span>' +
+                 '<span class="type-live" aria-hidden="true"></span>';
+  var live = h1.querySelector('.type-live');
+  var caret = document.createElement('span'); caret.className = 'type-caret';
+  live.appendChild(caret);
+  var si = 0, ci = 0, cur = null;
+  function tick(){
+    if(si >= segs.length){                                  // done: blink, then bow out
+      caret.classList.add('blink');
+      setTimeout(function(){ caret.style.opacity = 0; }, 2800);
+      return;
+    }
+    if(!cur){ cur = document.createElement('span');
+      if(segs[si][1]) cur.className = segs[si][1];
+      live.insertBefore(cur, caret); }
+    var txt = segs[si][0];
+    cur.textContent = txt.slice(0, ++ci);
+    var ch = txt[ci - 1], delay = 36 + Math.random() * 36;  // human cadence
+    if(ch === ',') delay = 320;                             // breathe at the comma
+    if(ci >= txt.length){ si++; ci = 0; cur = null; }
+    setTimeout(tick, delay);
+  }
+  setTimeout(tick, 550);
+})();
+
 (function spotlight(){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches || !matchMedia('(pointer:fine)').matches) return;
   var hero = document.querySelector('.hero'), spot = document.querySelector('.hero-spot');
