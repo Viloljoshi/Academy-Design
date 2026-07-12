@@ -42,8 +42,13 @@
   .hero-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:48px;flex-wrap:wrap;}
   .hero-h1{font-size:clamp(54px,8.4vw,120px);line-height:.96;max-width:11ch;margin:0;}
   .hero-h1 .hl{color:var(--lime);}
-  .hero-side{max-width:330px;padding-bottom:8px;display:flex;flex-direction:column;gap:18px;}
-  .hero-side p{color:var(--d-ink);font-size:16.5px;line-height:1.55;margin:0;text-wrap:pretty;}
+  .hero-side{max-width:330px;padding-bottom:8px;display:flex;flex-direction:column;gap:18px;position:relative;}
+  /* soft dark pool so the copy reads over the brightest part of the swarm */
+  .hero-side::before{content:"";position:absolute;inset:-34px -44px;z-index:-1;border-radius:40px;
+    background:radial-gradient(closest-side, rgba(4,10,7,.78), rgba(4,10,7,.35) 62%, rgba(4,10,7,0));
+    filter:blur(10px);}
+  .hero-side p{color:var(--d-ink);font-size:16.5px;line-height:1.55;margin:0;text-wrap:pretty;
+    text-shadow:0 1px 3px rgba(4,10,7,.85), 0 0 22px rgba(4,10,7,.6);}
   .hero-disc{font-size:12px;color:var(--d-ink-var);opacity:.75;max-width:440px;line-height:1.6;margin:18px 0 0;}
   .ref-banner{background:var(--primary-container);color:var(--on-primary-container);text-align:center;font-size:13.5px;font-weight:600;padding:9px;}
 
@@ -154,7 +159,12 @@
   <div class="hero-pin">
   <div class="hero-media" id="heroMedia" aria-hidden="true">
     <div class="hero-poster"></div>
-    <video class="hero-obj" src="../assets/media/hero-loop.mp4" poster="../assets/media/hero-poster.jpg" autoplay muted loop playsinline></video>
+    <video class="hero-obj" id="heroFilm" poster="../assets/media/hero-poster.jpg" autoplay muted loop playsinline></video>
+    <script>
+      // 2K-upscaled 1440p loop on desktop, 720p on small/coarse screens
+      document.getElementById('heroFilm').src = '../assets/media/' +
+        (matchMedia('(max-width: 860px), (pointer: coarse)').matches ? 'hero-loop-720.mp4' : 'hero-loop.mp4');
+    </script>
   </div>
   <div class="hero-scrim" aria-hidden="true"></div>
   <div class="hero-spot" aria-hidden="true"></div>
