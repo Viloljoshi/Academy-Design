@@ -394,11 +394,14 @@
     var ring = document.createElement('div'); ring.className = 'fx-ring';
     document.body.append(dot, ring);
     var mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+    var DARK = '.dark-deep,.dark-sec,.hero,.wb-live-card,.tk-card.dark,.unify-sec,footer,.welcome,.pubnav.float';
     addEventListener('pointermove', function(e){
       mx = e.clientX; my = e.clientY;
       dot.style.transform = 'translate(' + mx + 'px,' + my + 'px) translate(-50%,-50%)';
       var t = e.target.closest && e.target.closest('a,button,select,summary,input,.card-hover,.fx-ch');
       ring.classList.toggle('hot', !!t);
+      // adapt ring ink to the surface underneath: lime on dark, forest on light
+      ring.classList.toggle('dark', !!(e.target.closest && e.target.closest(DARK)));
     }, {passive: true});
     (function tick(){
       requestAnimationFrame(tick);

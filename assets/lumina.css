@@ -551,11 +551,14 @@ h1,h2,h3,h4,h5 {
   background: #fff; mix-blend-mode: difference; z-index: 9998; pointer-events: none;
   transform: translate(-50%, -50%); }
 .fx-ring { position: fixed; top: 0; left: 0; width: 34px; height: 34px; border-radius: 50%;
-  border: 1.5px solid rgba(195,243,92,.55); z-index: 9997; pointer-events: none;
+  border: 1.5px solid rgba(15,50,24,.55);              /* light-surface default: forest ink */
+  z-index: 9997; pointer-events: none;
   transform: translate(-50%, -50%); transition: width .3s var(--ease), height .3s var(--ease),
   border-color .3s, box-shadow .3s; }
-.fx-ring.hot { width: 54px; height: 54px; border-color: var(--lime);
-  box-shadow: 0 0 24px rgba(195,243,92,.35); }
+.fx-ring.hot { width: 54px; height: 54px; border-color: var(--primary);
+  box-shadow: 0 0 22px rgba(15,50,24,.28); }
+.fx-ring.dark { border-color: rgba(195,243,92,.6); }   /* dark-surface: lime */
+.fx-ring.dark.hot { border-color: var(--lime); box-shadow: 0 0 24px rgba(195,243,92,.35); }
 
 /* Letter-split reveal: characters cascade in when the reveal engine fires */
 .reveal-letters .lw { display: inline-block; }

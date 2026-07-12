@@ -49,6 +49,8 @@
     margin-left:.06em;vertical-align:-.03em;transition:opacity .6s var(--ease);}
   .type-caret.blink{animation:caretBlink 1.06s steps(2,start) infinite;}
   @keyframes caretBlink{50%{opacity:0;}}
+  .type-live .tc{opacity:0;animation:tcIn .16s ease-out forwards;}
+  @keyframes tcIn{from{opacity:0;filter:blur(3px);}to{opacity:1;filter:blur(0);}}
   /* dark glass card: guaranteed readable over the brightest swarm */
   .hero-side{max-width:352px;display:flex;flex-direction:column;gap:18px;position:relative;
     padding:24px 26px;border-radius:24px;
@@ -691,24 +693,41 @@ document.getElementById('testi').innerHTML = [
   var live = h1.querySelector('.type-live');
   var caret = document.createElement('span'); caret.className = 'type-caret';
   live.appendChild(caret);
-  var si = 0, ci = 0, cur = null;
-  function tick(){
-    if(si >= segs.length){                                  // done: blink, then bow out
-      caret.classList.add('blink');
-      setTimeout(function(){ caret.style.opacity = 0; }, 2800);
-      return;
+  // Flatten to a per-character plan with gentle, precomputed cadence,
+  // then run it on a rAF clock: no timer jitter, each glyph fades in.
+  var plan = [];
+  segs.forEach(function(s){
+    for(var k = 0; k < s[0].length; k++){
+      var ch = s[0][k];
+      plan.push({ch: ch, cls: s[1],
+        delay: ch === ',' ? 300 : ch === ' ' ? 52 : 40 + Math.random() * 14});
     }
-    if(!cur){ cur = document.createElement('span');
-      if(segs[si][1]) cur.className = segs[si][1];
-      live.insertBefore(cur, caret); }
-    var txt = segs[si][0];
-    cur.textContent = txt.slice(0, ++ci);
-    var ch = txt[ci - 1], delay = 36 + Math.random() * 36;  // human cadence
-    if(ch === ',') delay = 320;                             // breathe at the comma
-    if(ci >= txt.length){ si++; ci = 0; cur = null; }
-    setTimeout(tick, delay);
+  });
+  var cur = null, curCls = null, idx = 0, acc = 0, last = null, doneAt = 0;
+  function frame(now){
+    if(last === null) last = now;
+    acc += now - last; last = now;
+    var wrote = false;
+    while(idx < plan.length && acc >= plan[idx].delay){
+      acc -= plan[idx].delay;
+      var step = plan[idx++];
+      if(!cur || curCls !== step.cls){
+        cur = document.createElement('span');
+        curCls = step.cls; if(step.cls) cur.className = step.cls;
+        live.insertBefore(cur, caret);
+      }
+      if(step.ch === ' '){ cur.appendChild(document.createTextNode(' ')); }
+      else {
+        var c = document.createElement('span'); c.className = 'tc'; c.textContent = step.ch;
+        cur.appendChild(c);
+      }
+      wrote = true;
+    }
+    if(idx < plan.length){ requestAnimationFrame(frame); return; }
+    if(!doneAt){ doneAt = now; caret.classList.add('blink');
+      setTimeout(function(){ caret.style.opacity = 0; }, 2800); }
   }
-  setTimeout(tick, 550);
+  setTimeout(function(){ requestAnimationFrame(frame); }, 550);
 })();
 
 (function spotlight(){
