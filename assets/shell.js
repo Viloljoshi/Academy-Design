@@ -65,12 +65,32 @@
       .pubnav.float .pubnav-inner{height:60px;width:max-content;max-width:calc(100vw - 28px);margin:12px auto 6px;gap:28px;padding:0 8px 0 18px;}
       .pubnav.float .pubnav-links{flex:none;}
       .pubnav.float .pubnav-inner{
-        /* iOS dark material: enough tint that white ink ALWAYS reads,
-           heavy blur + backdrop dimming keep it clearly glass */
-        background:linear-gradient(180deg,rgba(16,26,20,.58),rgba(8,14,11,.52));
-        -webkit-backdrop-filter:blur(36px) saturate(180%) brightness(.85);backdrop-filter:blur(36px) saturate(180%) brightness(.85);
-        border-color:rgba(255,255,255,.18);
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(0,0,0,.12), 0 18px 44px -18px rgba(4,10,7,.4);}
+        /* Liquid Glass (regular variant): adaptive dark material with lensing.
+           Enough tint that white ink ALWAYS reads; blur + saturation + slight
+           dimming make the backdrop clearly refract through it. */
+        background:linear-gradient(180deg,rgba(17,27,21,.52),rgba(8,14,11,.46));
+        -webkit-backdrop-filter:blur(40px) saturate(200%) brightness(.88);backdrop-filter:blur(40px) saturate(200%) brightness(.88);
+        border-color:rgba(255,255,255,.07);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.26),
+          inset 0 16px 28px -22px rgba(255,255,255,.12),
+          inset 0 -1px 0 rgba(0,0,0,.3),
+          0 24px 60px -24px rgba(4,10,7,.55),
+          0 2px 8px rgba(4,10,7,.16);}
+      /* Lensing rim: a 1px gradient ring, bright where light enters (top-left),
+         falling off through the sides, warming again at the exit edge */
+      .pubnav.float .pubnav-inner::before{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:1px;
+        background:linear-gradient(135deg,rgba(255,255,255,.45),rgba(255,255,255,.07) 38%,rgba(255,255,255,.02) 62%,rgba(255,255,255,.26));
+        -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+        mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
+        pointer-events:none;}
+      /* Specular sheen sweeping from the light source */
+      .pubnav.float .pubnav-inner::after{content:'';position:absolute;inset:0;border-radius:inherit;
+        background:radial-gradient(130% 100% at 16% 0%, rgba(255,255,255,.13), transparent 44%);
+        pointer-events:none;}
+      /* Interactive: controls respond physically to the press */
+      .pubnav.float .pubnav-link{transition:background .15s,color .15s,transform .18s var(--ease);}
+      .pubnav.float .pubnav-link:active{transform:scale(.95);}
       .pubnav.float .pubnav-link{color:rgba(248,251,246,.95);}
       /* light ink with a whisper of shadow so it reads on any background */
       .pubnav.float .pubnav-link{color:rgba(244,248,242,.9);text-shadow:0 1px 2px rgba(4,10,7,.35);}
