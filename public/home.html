@@ -14,7 +14,10 @@
      hardware-decoded). No pin, no scrub: the page scrolls freely while the
      content glides out on a lerped parallax. */
   .hero{position:relative;}
-  .hero-pin{position:relative;height:100vh;min-height:640px;overflow:hidden;display:flex;flex-direction:column;}
+  /* height:auto + min-height so the stage can outgrow short windows —
+     a fixed 100vh clipped the ticker's bottom half on smaller viewports */
+  .hero-pin{position:relative;min-height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+  .hero-pin .hero-stage{flex:1;}
   /* media is oversized above/below the viewport so the scroll parallax can
      drift it without ever exposing a seam at the edges */
   .hero-media{position:absolute;left:0;right:0;top:-16vh;bottom:-6vh;overflow:hidden;}
