@@ -68,8 +68,8 @@
         /* Liquid Glass (regular variant): adaptive dark material with lensing.
            Enough tint that white ink ALWAYS reads; blur + saturation + slight
            dimming make the backdrop clearly refract through it. */
-        background:linear-gradient(180deg,rgba(17,27,21,.52),rgba(8,14,11,.46));
-        -webkit-backdrop-filter:blur(40px) saturate(200%) brightness(.88);backdrop-filter:blur(40px) saturate(200%) brightness(.88);
+        background:linear-gradient(180deg,rgba(19,29,23,.62),rgba(9,15,12,.56));
+        -webkit-backdrop-filter:blur(40px) saturate(190%) brightness(.8);backdrop-filter:blur(40px) saturate(190%) brightness(.8);
         border-color:rgba(255,255,255,.07);
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.26),
@@ -84,16 +84,25 @@
         -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
         mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
         pointer-events:none;}
-      /* Specular sheen sweeping from the light source */
+      /* Specular sheen from the light source + a pointer-tracked glint that
+         glides across the glass while the cursor moves over it */
       .pubnav.float .pubnav-inner::after{content:'';position:absolute;inset:0;border-radius:inherit;
-        background:radial-gradient(130% 100% at 16% 0%, rgba(255,255,255,.13), transparent 44%);
-        pointer-events:none;}
-      /* Interactive: controls respond physically to the press */
-      .pubnav.float .pubnav-link{transition:background .15s,color .15s,transform .18s var(--ease);}
-      .pubnav.float .pubnav-link:active{transform:scale(.95);}
-      .pubnav.float .pubnav-link{color:rgba(248,251,246,.95);}
-      /* light ink with a whisper of shadow so it reads on any background */
-      .pubnav.float .pubnav-link{color:rgba(244,248,242,.9);text-shadow:0 1px 2px rgba(4,10,7,.35);}
+        background:
+          radial-gradient(150px 90px at var(--gx,50%) var(--gy,-40%), rgba(255,255,255,var(--glint,0)), transparent 68%),
+          radial-gradient(130% 100% at 16% 0%, rgba(255,255,255,.12), transparent 44%);
+        transition:opacity .3s;pointer-events:none;}
+      /* Interactive: hover lifts and brightens, press compresses (glassEffect
+         .interactive() behavior) */
+      .pubnav.float .pubnav-link{transition:background .18s var(--ease),color .18s,transform .22s var(--ease),box-shadow .18s;}
+      .pubnav.float .pubnav-link:hover{background:rgba(255,255,255,.14);color:#fff;transform:scale(1.05);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 4px 14px -6px rgba(4,10,7,.5);}
+      .pubnav.float .pubnav-link:active{transform:scale(.94);}
+      .pubnav.float .btn{transition:transform .22s var(--ease),box-shadow .22s var(--ease),filter .22s;}
+      .pubnav.float .btn:hover{transform:scale(1.05);}
+      .pubnav.float .btn:active{transform:scale(.94);}
+      .pubnav.float .pubnav-inner:hover{border-color:rgba(255,255,255,.11);}
+      /* light ink with a soft shadow: always legible on the dimmed glass */
+      .pubnav.float .pubnav-link{color:rgba(250,253,249,.98);text-shadow:0 1px 3px rgba(4,10,7,.5);}
       .pubnav.float .pubnav-link:hover{background:rgba(255,255,255,.12);color:#fff;}
       .pubnav.float .pubnav-links .pubnav-link.active{background:rgba(255,255,255,.16);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25);border-color:rgba(255,255,255,.2);text-shadow:none;}
       .pubnav.float .fx-logo > span:last-child{color:#f1f5ef !important;text-shadow:0 1px 2px rgba(4,10,7,.35);}
@@ -276,6 +285,29 @@
     }
     addEventListener('scroll', function(){ if(!raf) raf = requestAnimationFrame(frame); }, {passive:true});
     document.addEventListener('DOMContentLoaded', frame);
+  })();
+
+  // Liquid Glass glint: a specular highlight that glides across the floating
+  // pill following the pointer (fine pointers only, off for reduced motion).
+  (function glassGlint(){
+    if(matchMedia('(pointer: coarse)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var raf = null, ev = null;
+    document.addEventListener('pointermove', function(e){
+      ev = e;
+      if(!raf) raf = requestAnimationFrame(function(){
+        raf = null;
+        var inner = document.querySelector('.pubnav.float .pubnav-inner');
+        if(!inner) return;
+        var r = inner.getBoundingClientRect();
+        var inside = ev.clientX >= r.left - 40 && ev.clientX <= r.right + 40 &&
+                     ev.clientY >= r.top - 40 && ev.clientY <= r.bottom + 60;
+        inner.style.setProperty('--glint', inside ? '.16' : '0');
+        if(inside){
+          inner.style.setProperty('--gx', ((ev.clientX - r.left) / r.width * 100) + '%');
+          inner.style.setProperty('--gy', ((ev.clientY - r.top) / r.height * 100) + '%');
+        }
+      });
+    }, {passive:true});
   })();
 
   w.FXShell = { logo, publicNav, footer, appSidebar, appStyles, appTop, ic };
