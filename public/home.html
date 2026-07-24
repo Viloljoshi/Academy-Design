@@ -526,7 +526,7 @@ const ref = new URLSearchParams(location.search).get('ref');
 if(ref && /^[a-z0-9 ]{2,30}$/i.test(ref)){
   document.getElementById('ref').innerHTML = `<div class="ref-banner">You were referred by <strong>${ref}</strong>, welcome to FX Academy.</div>`;
 }
-document.getElementById('nav').innerHTML = FXShell.publicNav('Home');
+document.getElementById('nav').innerHTML = FXShell.publicNav('Home', {overHero:true});
 document.getElementById('footer').innerHTML = FXShell.footer();
 
 // Problem cards
@@ -785,10 +785,14 @@ document.getElementById('testi').innerHTML = [
     ['XAUUSD','2,341.20','+0.92%',1],['GBPJPY','198.84','+0.21%',1],['AUDUSD','0.6648','−0.27%',0],
     ['EURGBP','0.8527','+0.05%',1],['BTCUSD','67,420','+2.14%',1]
   ];
+  var up = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 6.5V1.5M4 1.5L1.5 4M4 1.5L6.5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var dn = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M4 1.5V6.5M4 6.5L1.5 4M4 6.5L6.5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   var html = items.map(function(i){
-    return '<span class="tk-item"><b>'+i[0]+'</b><span class="num">'+i[1]+'</span><span class="num" style="color:'+(i[3]?'var(--lime)':'var(--neg-on-dark)')+';">'+i[2]+'</span></span>';
-  }).join('');
-  document.getElementById('tkInner').innerHTML = html + html;
+    return '<span class="tk-item"><b>'+i[0]+'</b><span class="num">'+i[1]+'</span>'
+      + '<span class="tk-delta '+(i[3]?'up':'down')+'">'+(i[3]?up:dn)+i[2].replace('−','').replace('+','')+'</span></span>';
+  }).join('<span class="tk-sep"></span>');
+  var sep = '<span class="tk-sep"></span>';
+  document.getElementById('tkInner').innerHTML = html + sep + html + sep;
 })();
 
 // Scroll progress hairline

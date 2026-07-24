@@ -46,7 +46,7 @@
       ? `<a href="../member/dashboard.html" class="btn btn-forest btn-sm">Go to Dashboard</a>`
       : `<a href="login.html" class="pubnav-link">Login</a><a href="pricing.html" class="btn btn-lime btn-sm">Join Pro</a>`;
     return `
-    <header class="pubnav sticky-top">
+    <header class="pubnav sticky-top${opts.overHero ? ' over' : ''}">
       <div class="wrap pubnav-inner">
         <a href="home.html">${logo('dark',28)}</a>
         <nav class="pubnav-links">${links}</nav>
@@ -78,6 +78,18 @@
       .pubnav.float .pubnav-links .pubnav-link.active{background:rgba(255,255,255,.16);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25);border-color:rgba(255,255,255,.2);text-shadow:none;}
       .pubnav.float .fx-logo > span:last-child{color:#f1f5ef !important;text-shadow:0 1px 2px rgba(4,10,7,.35);}
       .pubnav.float .pubnav-burger{color:#f1f5ef;}
+      /* Over-hero mode (dark full-bleed heroes): the bar overlays the film
+         transparently at the top instead of stacking a light band above it,
+         then hands off to the floating pill on scroll. */
+      .pubnav.over:not(.float){position:absolute;top:0;left:0;right:0;z-index:60;
+        background:linear-gradient(180deg,rgba(4,10,7,.5),rgba(4,10,7,0));
+        border-bottom-color:transparent;box-shadow:none;
+        -webkit-backdrop-filter:none;backdrop-filter:none;}
+      .pubnav.over:not(.float) .pubnav-link{color:rgba(244,248,242,.9);text-shadow:0 1px 2px rgba(4,10,7,.35);}
+      .pubnav.over:not(.float) .pubnav-link:hover{background:rgba(255,255,255,.12);color:#fff;}
+      .pubnav.over:not(.float) .pubnav-links .pubnav-link.active{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.22);text-shadow:none;}
+      .pubnav.over:not(.float) .fx-logo > span:last-child{color:#f1f5ef !important;text-shadow:0 1px 2px rgba(4,10,7,.35);}
+      .pubnav.over:not(.float) .pubnav-burger{color:#f1f5ef;}
       @media(prefers-reduced-motion:reduce){.pubnav,.pubnav-inner{transition:none;}}
       .pubnav-links{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;}
       .pubnav-link{font-size:13px;font-weight:700;color:var(--on-surface-var);padding:10px 14px;border-radius:9999px;transition:.15s;}
@@ -235,10 +247,11 @@
       var nav = document.querySelector('.pubnav');
       if(!nav) return;
       var on = window.scrollY > 70;
+      var over = nav.classList.contains('over');
       if(on && !h) h = nav.offsetHeight;
       // placeholder height on the host so content doesn't jump when the bar
-      // leaves the flow
-      if(nav.parentElement) nav.parentElement.style.minHeight = on ? h+'px' : '';
+      // leaves the flow (over-hero bars never occupy flow, so no placeholder)
+      if(nav.parentElement) nav.parentElement.style.minHeight = (on && !over) ? h+'px' : '';
       nav.classList.toggle('float', on);
     }
     addEventListener('scroll', function(){ if(!raf) raf = requestAnimationFrame(frame); }, {passive:true});
