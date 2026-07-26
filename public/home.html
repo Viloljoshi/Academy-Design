@@ -28,7 +28,32 @@
   @keyframes posterBreathe{from{transform:scale(1);}to{transform:scale(1.055);}}
   #heroFilm{opacity:0;transition:opacity 1.2s var(--ease);}
   #heroFilm.on{opacity:1;}
-  @media(prefers-reduced-motion:reduce){.hero-poster{animation:none;}}
+  /* Equity-curve layer: draws itself on load, then a light pulse travels
+     the line forever; screen-blends into the aurora */
+  .hero-eq{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+  /* dark under-stroke keeps the line legible where it crosses the bright crest */
+  .eq-halo{fill:none;stroke:rgba(4,10,7,.42);stroke-width:9;filter:blur(3px);
+    stroke-dasharray:2600;stroke-dashoffset:2600;animation:eqDraw 3s var(--ease) .9s forwards;}
+  .eq-line{fill:none;stroke:url(#eqlg);stroke-width:3;stroke-linecap:round;
+    filter:drop-shadow(0 0 14px rgba(195,243,92,.5));
+    stroke-dasharray:2600;stroke-dashoffset:2600;animation:eqDraw 3s var(--ease) .9s forwards;}
+  .eq-pulse{fill:none;stroke:rgba(255,255,255,.9);stroke-width:3.2;stroke-linecap:round;
+    stroke-dasharray:80 2520;stroke-dashoffset:2600;opacity:0;animation:eqPulse 6.5s linear 4.2s infinite;}
+  .eq-area{opacity:0;animation:eqFade 1.6s var(--ease) 2.6s forwards;}
+  /* chart markers: dark core with a lime ring, soft glow */
+  .eq-dot{opacity:0;animation:eqDot .6s var(--ease) forwards;}
+  .eq-dot .dr{fill:rgba(6,12,8,.78);stroke:#d9ff8f;stroke-width:2;filter:drop-shadow(0 0 8px rgba(195,243,92,.7));}
+  .eq-dot .dc{fill:#f4ffe0;}
+  @keyframes eqDraw{to{stroke-dashoffset:0;}}
+  @keyframes eqFade{to{opacity:.5;}}
+  @keyframes eqPulse{0%{stroke-dashoffset:2600;opacity:0;}6%{opacity:.85;}82%{opacity:.85;}100%{stroke-dashoffset:0;opacity:0;}}
+  @keyframes eqDot{from{opacity:0;}to{opacity:.95;}}
+  @media(max-width:820px){.eq-line{stroke-width:2.4;}.eq-pulse{stroke-width:2.6;}}
+  @media(prefers-reduced-motion:reduce){.hero-poster{animation:none;}
+    .eq-line{animation:none;stroke-dashoffset:0;}
+    .eq-pulse{display:none;}
+    .eq-area{animation:none;opacity:.45;}
+    .eq-dot{animation:none;opacity:.9;}}
   @media(prefers-reduced-motion:reduce){.hero-obj{display:none;}}
   .hero-scrim{position:absolute;inset:0;background:
     linear-gradient(180deg, rgba(5,11,7,.6) 0%, transparent 24%),
@@ -74,9 +99,15 @@
     font:500 15.5px var(--font-body);padding:14px 0;}
   .ask-row input::placeholder{color:var(--d-ink-var);opacity:.85;}
   .ask-send{flex:none;width:44px;height:44px;border-radius:9999px;border:0;background:var(--lime);color:var(--on-lime);
-    display:grid;place-items:center;cursor:pointer;transition:transform .25s var(--ease),filter .2s;}
-  .ask-send:hover{transform:scale(1.06);filter:brightness(1.05);}
-  .ask-send:active{transform:scale(.96);}
+    display:grid;place-items:center;cursor:pointer;overflow:hidden;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.55), inset 0 -2px 4px rgba(20,31,0,.22), 0 6px 18px -6px rgba(195,243,92,.45);
+    transition:transform .25s var(--ease),filter .2s,box-shadow .25s var(--ease);}
+  .ask-send svg{transition:transform .28s var(--ease);}
+  .ask-send:hover{transform:scale(1.08);filter:brightness(1.06);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6), inset 0 -2px 4px rgba(20,31,0,.22), 0 10px 26px -8px rgba(195,243,92,.65);}
+  .ask-send:hover svg{transform:translate(2px,-2px);}
+  .ask-send:active{transform:scale(.94);}
+  .ask-send:active svg{transform:translate(4px,-4px);}
   .ask-chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 14px 14px;}
   .ask-chips a{font-size:12.5px;font-weight:700;color:var(--d-ink-var);padding:7px 13px;border-radius:9999px;
     background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
@@ -208,13 +239,39 @@
     <div class="hero-poster"></div>
     <!-- Growth-aurora film (Higgsfield): 20s seamless palindrome loop -->
     <video class="hero-obj" id="heroFilm" autoplay muted loop playsinline preload="auto"></video>
+    <!-- Equity curve: the growth story drawn as a chart line riding the
+         aurora (rise, pullback, rise, pullback, rally) -->
+    <svg class="hero-eq" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="eqlg" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="#7ecc60" stop-opacity=".5"/>
+          <stop offset=".55" stop-color="#c3f35c"/>
+          <stop offset="1" stop-color="#f2ffd6"/>
+        </linearGradient>
+        <linearGradient id="eqarea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#c3f35c" stop-opacity=".26"/>
+          <stop offset="1" stop-color="#c3f35c" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path class="eq-area" fill="url(#eqarea)" d="M60,820 C160,770 245,700 330,700 C425,700 445,780 535,780 C645,780 705,660 805,660 C905,660 945,720 1045,720 C1195,720 1400,430 1540,220 L1540,900 L60,900 Z"/>
+      <path class="eq-halo" vector-effect="non-scaling-stroke" d="M60,820 C160,770 245,700 330,700 C425,700 445,780 535,780 C645,780 705,660 805,660 C905,660 945,720 1045,720 C1195,720 1400,430 1540,220"/>
+      <path class="eq-line" vector-effect="non-scaling-stroke" d="M60,820 C160,770 245,700 330,700 C425,700 445,780 535,780 C645,780 705,660 805,660 C905,660 945,720 1045,720 C1195,720 1400,430 1540,220"/>
+      <path class="eq-pulse" vector-effect="non-scaling-stroke" d="M60,820 C160,770 245,700 330,700 C425,700 445,780 535,780 C645,780 705,660 805,660 C905,660 945,720 1045,720 C1195,720 1400,430 1540,220"/>
+      <g class="eq-dots">
+        <g class="eq-dot" transform="translate(330,700)" style="animation-delay:1.5s"><circle class="dr" r="5.5"/><circle class="dc" r="2.2"/></g>
+        <g class="eq-dot" transform="translate(535,780)" style="animation-delay:2s"><circle class="dr" r="5.5"/><circle class="dc" r="2.2"/></g>
+        <g class="eq-dot" transform="translate(805,660)" style="animation-delay:2.5s"><circle class="dr" r="5.5"/><circle class="dc" r="2.2"/></g>
+        <g class="eq-dot" transform="translate(1045,720)" style="animation-delay:2.9s"><circle class="dr" r="5.5"/><circle class="dc" r="2.2"/></g>
+        <g class="eq-dot" transform="translate(1540,220)" style="animation-delay:3.4s"><circle class="dr" r="6.5"/><circle class="dc" r="2.6"/></g>
+      </g>
+    </svg>
   </div>
   <div class="hero-scrim" aria-hidden="true"></div>
   <div class="hero-spot" aria-hidden="true"></div>
   <div class="wrap hero-stage" id="heroStage">
     <div class="hero-center" id="heroCenter">
       <span class="chip" style="background:rgba(255,255,255,.07);color:var(--d-ink);border:1px solid var(--d-outline-strong);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);"><span class="dot"></span>&nbsp;Education-first · Risk-aware</span>
-      <h1 class="display-xl hero-h1" id="heroH1">Master forex with <span class="hl">method,</span> not hype.</h1>
+      <h1 class="display-xl hero-h1" id="heroH1">Master trading with <span class="hl">method,</span> not hype.</h1>
       <p class="hero-sub">Structured courses, live sessions and an AI tutor. One calm, disciplined platform for the long game.</p>
 
       <!-- The ask bar: our version of Stitch's prompt card -->
@@ -223,7 +280,7 @@
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>
           <input type="text" name="q" placeholder="Ask the AI Tutor, where should I start?" autocomplete="off">
           <button class="ask-send" type="submit" aria-label="Ask">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
           </button>
         </div>
         <div class="ask-chips">
@@ -697,6 +754,48 @@ document.getElementById('testi').innerHTML = [
   var p = v.play(); if(p && p.catch) p.catch(function(){});
 })();
 
+/* Equity line: breathes like live market data, dims while the visitor is
+   talking to the ask bar, and dissolves with the hero on scroll */
+(function heroEq(){
+  var svg = document.querySelector('.hero-eq');
+  if(!svg) return;
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var line = svg.querySelector('.eq-line'), halo = svg.querySelector('.eq-halo'),
+      pulse = svg.querySelector('.eq-pulse'), area = svg.querySelector('.eq-area'),
+      dots = [].slice.call(svg.querySelectorAll('.eq-dot'));
+  var base = [[60,820],[330,700],[535,780],[805,660],[1045,720],[1540,220]];
+  var amp = [6,11,9,12,9,7], spd = [.5,.38,.46,.33,.42,.28], ph = [0,1.7,3.1,4.4,.9,2.2];
+  var dim = 1, dimT = 1; // ask-bar focus dimmer (lerped)
+  function build(pts){
+    var d = 'M'+pts[0][0]+','+pts[0][1];
+    for(var i=1;i<pts.length;i++){
+      var p = pts[i-1], c = pts[i], dx = (c[0]-p[0])*.45;
+      d += ' C'+(p[0]+dx)+','+p[1]+' '+(c[0]-dx)+','+c[1]+' '+c[0]+','+c[1];
+    }
+    return d;
+  }
+  var ask = document.querySelector('.hero-ask input');
+  if(ask){
+    ask.addEventListener('focus', function(){ dimT = .12; });
+    ask.addEventListener('blur', function(){ if(!ask.value) dimT = 1; });
+    ask.addEventListener('input', function(){ dimT = ask.value ? .12 : .12; });
+  }
+  (function tick(t){
+    requestAnimationFrame(tick);
+    // dissolve in step with the hero exit choreography
+    var p = Math.min(1, Math.max(0, scrollY / (innerHeight * .7)));
+    dim += (dimT - dim) * .08;
+    var o = Math.pow(1 - p, 1.3) * dim;
+    svg.style.opacity = o.toFixed(3);
+    if(o < .02 || reduce || document.hidden) return; // nothing worth animating
+    var pts = base.map(function(b,i){ return [b[0], b[1] + Math.sin(t/1000*spd[i]+ph[i])*amp[i]]; });
+    var d = build(pts);
+    line.setAttribute('d', d); halo.setAttribute('d', d); pulse.setAttribute('d', d);
+    area.setAttribute('d', d + ' L1540,900 L60,900 Z');
+    dots.forEach(function(g,i){ var q = pts[i+1]; g.setAttribute('transform','translate('+q[0]+','+q[1]+')'); });
+  })(0);
+})();
+
 (function heroExit(){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   var media = document.getElementById('heroMedia');
@@ -724,7 +823,7 @@ document.getElementById('testi').innerHTML = [
   var h1 = document.getElementById('heroH1'); if(!h1) return;
   h1.dataset.split = 1;                                     // opt out of the word-reveal layer
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;   // static headline
-  var segs = [['Master forex with ', ''], ['method,', 'hl'], [' not hype.', '']];
+  var segs = [['Master trading with ', ''], ['method,', 'hl'], [' not hype.', '']];
   h1.setAttribute('aria-label', segs.map(function(s){ return s[0]; }).join(''));
   h1.innerHTML = '<span class="type-ghost" aria-hidden="true">' + h1.innerHTML + '</span>' +
                  '<span class="type-live" aria-hidden="true"></span>';
