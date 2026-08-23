@@ -798,9 +798,13 @@ document.getElementById('testi').innerHTML = [
     pts=[];
     var rH = h1.getBoundingClientRect(), rC = canvas.getBoundingClientRect();
     var st = getComputedStyle(h1);
-    var fs = parseFloat(st.fontSize), lh = fs*1.02;
+    // The flock's sentence is 22% larger than the DOM type: formation is the
+    // hero moment and has to be readable from across the room. The ember
+    // scatter and crossfade absorb the size handoff.
+    var fs = parseFloat(st.fontSize)*1.22, lh = fs*1.02;
     var off = document.createElement('canvas');
-    off.width = Math.ceil(rH.width); off.height = Math.ceil(lh*2.3);
+    off.width = Math.min(Math.ceil(W*.96), Math.ceil(rH.width*1.4));
+    off.height = Math.ceil(lh*2.3);
     var o = off.getContext('2d');
     o.textAlign='center'; o.textBaseline='alphabetic';
     o.font = st.fontWeight+' '+fs+'px '+st.fontFamily;
@@ -815,7 +819,7 @@ document.getElementById('testi').innerHTML = [
     o.textAlign='left';
     for(g=0;g<segs.length;g++){ o.fillStyle=segs[g][1]; o.fillText(segs[g][0], x0, lh*1.94); x0+=wds[g]; }
     var img=o.getImageData(0,0,off.width,off.height).data;
-    var step=4;
+    var step=3;
     for(var pass=0; pass<2; pass++){
       pts=[];
       for(var y=0;y<off.height;y+=step){
@@ -823,15 +827,15 @@ document.getElementById('testi').innerHTML = [
           var k=(y*off.width+x)*4;
           if(img[k+3]>128){
             pts.push({
-              tx:(rH.left-rC.left+x)/W,
-              ty:(rH.top-rC.top+y - lh*0.06)/H,
+              tx:(rH.left-rC.left+rH.width/2-off.width/2+x)/W,
+              ty:(rH.top-rC.top+rH.height/2-off.height/2+y)/H,
               lime: img[k]>200 && img[k+1]<90
             });
           }
         }
       }
-      if(pts.length<=5000) break;
-      step=5;
+      if(pts.length<=8000) break;
+      step=4;
     }
   }
 
@@ -963,11 +967,17 @@ document.getElementById('testi').innerHTML = [
         var f2=1-Math.pow(1-(e-FLOCK)/(FORM-FLOCK),3);
         g.x+=(g.tx-g.x)*(.1+.3*f2);
         g.y+=(g.ty-g.y)*(.1+.3*f2);
-        x=g.x; y=g.y; a=.62+.33*f2;
+        x=g.x; y=g.y; a=.62+.38*f2;
+        ctx.globalAlpha=a; ctx.fillStyle=g.lime?lime(1):ink(1);
+        ctx.fillRect(x*W, y*H, g.sz*(1+.7*f2), g.sz*(1+.7*f2));
+        continue;
       } else if(el<HOLD){
-        // the flock IS the sentence — sparkle while it holds
-        var s2=.75+.25*Math.sin(el*7+g.tw);
-        x=g.tx; y=g.ty; a=.95*s2;
+        // the flock IS the sentence — solid, with only a gentle breath
+        var s2=.9+.1*Math.sin(el*5+g.tw);
+        x=g.tx; y=g.ty; a=s2;
+        ctx.globalAlpha=a; ctx.fillStyle=g.lime?lime(1):ink(1);
+        ctx.fillRect(x*W, y*H, g.sz*1.7, g.sz*1.7);
+        continue;
       } else {
         // Embers: the type has taken over; the flock drifts apart, rises a
         // little, and dissolves. Once a particle is gone it costs nothing —
