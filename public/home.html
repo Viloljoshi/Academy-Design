@@ -63,6 +63,21 @@
   @keyframes caretBlink{50%{opacity:0;}}
   .type-live .tc{opacity:0;animation:tcIn .16s ease-out forwards;}
   @keyframes tcIn{from{opacity:0;filter:blur(3px);}to{opacity:1;filter:blur(0);}}
+  /* particle handoff: the real type fades in as the flock releases */
+  .type-reveal{position:absolute;inset:0;opacity:0;transition:opacity .9s var(--ease);}
+  .hero-h1.formed .type-reveal{opacity:1;}
+  /* The badge: quiet, tracked caps with a live dot — a credential, not a pill */
+  .hero-badge{display:inline-flex;align-items:center;gap:12px;
+    font-size:11.5px;font-weight:650;letter-spacing:.16em;text-transform:uppercase;
+    color:rgba(233,244,229,.72);padding:9px 18px;border-radius:999px;
+    border:1px solid rgba(195,243,92,.16);background:rgba(8,16,12,.42);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);}
+  .hero-badge .hb-dot{width:5px;height:5px;border-radius:50%;background:var(--lime);
+    box-shadow:0 0 8px rgba(195,243,92,.8);animation:hbPulse 2.6s var(--ease-in-out) infinite;}
+  .hero-badge .hb-sep{width:3px;height:3px;border-radius:50%;background:rgba(233,244,229,.32);}
+  @keyframes hbPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);}}
+  @media(prefers-reduced-motion:reduce){.hero-badge .hb-dot{animation:none;}}
   .hero-sub{color:var(--d-ink);font-size:clamp(15.5px,1.35vw,18px);line-height:1.6;max-width:560px;margin:22px auto 0;text-wrap:pretty;text-shadow:0 1px 3px rgba(4,10,7,.7);}
   /* the ask bar: Stitch's input card, recast as the AI Tutor prompt */
   .hero-ask{width:min(640px,100%);margin:34px auto 0;border-radius:22px;text-align:left;
@@ -221,7 +236,7 @@
          motion mode — it is the geometry the particles resolve onto; under
          reduced motion it renders as a single calm stroked line. -->
     <svg class="hero-eq" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
-      <path id="eqPath" fill="none" d="M60,800 C226,800 264,680 430,680 C578,680 612,530 760,530 C859,530 881,690 980,690 C1232,690 1288,150 1540,150"/>
+      <path id="eqPath" fill="none" d="M60,780 C260,762 340,700 520,660 C700,620 764,646 900,560 C1040,474 1104,514 1220,420 C1340,324 1424,278 1540,238"/>
     </svg>
     <!-- Murmuration canvas: noise → flock → the curve. Crisp points, no gas. -->
     <canvas class="hero-part" id="heroPart" aria-hidden="true"></canvas>
@@ -230,7 +245,7 @@
   <div class="hero-spot" aria-hidden="true"></div>
   <div class="wrap hero-stage" id="heroStage">
     <div class="hero-center" id="heroCenter">
-      <span class="chip" style="background:rgba(255,255,255,.07);color:var(--d-ink);border:1px solid var(--d-outline-strong);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);"><span class="dot"></span>&nbsp;Education-first · Risk-aware</span>
+      <span class="hero-badge"><span class="hb-dot"></span>Education-first<span class="hb-sep"></span>Risk-aware</span>
       <h1 class="display-xl hero-h1" id="heroH1">Master trading with <span class="hl">method,</span> not hype.</h1>
       <p class="hero-sub">Structured courses, live sessions and an AI tutor. One calm, disciplined platform for the long game.</p>
 
@@ -703,49 +718,117 @@ document.getElementById('testi').innerHTML = [
 // leave at staggered rates and the film drifts, all eased through a lerp so
 // the motion is butter regardless of scroll-input granularity.
 /* Growth-aurora film: pick the right rendition, fade in once frames flow */
-/* Murmuration: ~2400 crisp brand points scatter as market noise, flock
-   (curl-noise, the Starling reference), then resolve onto the growth path.
-   Keeps the aurora's manners: dims while the ask bar is in use, dissolves
-   with the hero on scroll, and sleeps when hidden. No gas, no blur. */
+/* The flock writes the headline. A murmuration of brand particles scatters
+   as market noise, flocks (the Starling reference), then converges to FORM
+   the tagline itself — white words, lime "method," — holds with a sparkle,
+   and releases into a perpetual ambient drift as the real type takes over.
+   The animation IS the headline, not a background. Never a static frame:
+   the drift and dust run forever. Dims while the ask bar is in use,
+   dissolves with the hero on scroll, sleeps when hidden. */
 (function heroPart(){
   var canvas = document.getElementById('heroPart');
-  var path = document.getElementById('eqPath');
-  if(!canvas || !path) return;
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ canvas.remove(); return; }
+  var h1 = document.getElementById('heroH1');
+  if(!canvas || !h1) return;
+
+  // Accessible name is the full sentence regardless of visual mode.
+  h1.setAttribute('aria-label', 'Master trading with method, not hype.');
+  h1.dataset.split = 1;   // opt out of the global word-reveal layer — its
+                          // child spans override the ghost's visibility
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var small = matchMedia('(max-width: 640px)').matches;
+
+  // Ghost keeps layout; reveal is the real styled type we fade in.
+  var original = h1.innerHTML;
+  h1.innerHTML = '<span class="type-ghost" aria-hidden="true">' + original + '</span>' +
+                 '<span class="type-reveal" aria-hidden="true">' + original + '</span>';
+
+  if(reduced){ canvas.remove(); h1.classList.add('formed'); return; }
   var ctx = canvas.getContext('2d');
-  var len = path.getTotalLength();
 
   var W=0, H=0;
   function fit(){
     var r = canvas.getBoundingClientRect();
-    var dpr = Math.min(devicePixelRatio||1, 2);
+    var dpr = Math.min(devicePixelRatio||1, 1.5);
     W = r.width; H = r.height;
     canvas.width = Math.round(W*dpr); canvas.height = Math.round(H*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
-  fit(); addEventListener('resize', fit);
+  fit();
 
-  // eqPath lives in a 1600x900 stretched viewBox — sample it into unit space.
-  var COUNT = 2400, SCATTER=1.2, FLOCK=3.2, RESOLVE=4.6;
-  var seed = 1234567;
+  var seed = 424242;
   function rand(){ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; }
   function n2(x,y,t){ return Math.sin(x*1.7+t*.9)*Math.cos(y*2.3-t*.7)+Math.sin((x+y)*.9+t*1.3)*.5; }
-  // leaf #6c9e75 -> lime #c3f35c: the rise earns the brand colour.
-  function paint(h){ return 'rgb('+Math.round(108+87*h)+','+Math.round(158+85*h)+','+Math.round(117-25*h)+')'; }
 
-  var ps=[];
-  for(var i=0;i<COUNT;i++){
-    var t=i/(COUNT-1), pt=path.getPointAtLength(t*len);
-    var tx=pt.x/1600, ty=pt.y/900;
-    var spread = rand()<.85 ? .012 : .05;
-    ps.push({
-      sx:rand(), sy:rand(), x:0, y:0, t:t,
-      tx:tx+(rand()-.5)*spread*.6, ty:ty+(rand()-.5)*spread*2,
-      sz:.7+rand()*1.1, d:rand()*.35,
-      h:Math.min(1,Math.max(0, t*.9+(rand()-.5)*.3))
-    });
-    ps[i].x=ps[i].sx; ps[i].y=ps[i].sy;
+  // Ambient dust runs in every mode — the frame is never static.
+  var DUST=[];
+  for(var i=0;i<200;i++) DUST.push({x:rand(), y:rand(), z:.3+rand()*.7, tw:rand()*6.28});
+
+  /* Sample the headline's letterforms into particle targets. The two-line
+     break mirrors the desktop layout; "method," is drawn in red on the
+     sampling canvas purely to classify which particles turn lime. */
+  var pts=[];
+  function sampleHeadline(){
+    pts=[];
+    var rH = h1.getBoundingClientRect(), rC = canvas.getBoundingClientRect();
+    var st = getComputedStyle(h1);
+    var fs = parseFloat(st.fontSize), lh = fs*1.02;
+    var off = document.createElement('canvas');
+    off.width = Math.ceil(rH.width); off.height = Math.ceil(lh*2.3);
+    var o = off.getContext('2d');
+    o.textAlign='center'; o.textBaseline='alphabetic';
+    o.font = st.fontWeight+' '+fs+'px '+st.fontFamily;
+    var cx = off.width/2;
+    o.fillStyle='#fff';
+    o.fillText('Master trading with', cx, lh*0.9);
+    // second line: three segments centred as one unit
+    var segs=[['method,','#f00'],[' not hype.','#fff']];
+    var total=0, wds=[];
+    for(var g=0;g<segs.length;g++){ wds.push(o.measureText(segs[g][0]).width); total+=wds[g]; }
+    var x0=cx-total/2;
+    o.textAlign='left';
+    for(g=0;g<segs.length;g++){ o.fillStyle=segs[g][1]; o.fillText(segs[g][0], x0, lh*1.94); x0+=wds[g]; }
+    var img=o.getImageData(0,0,off.width,off.height).data;
+    var step=4;
+    for(var pass=0; pass<2; pass++){
+      pts=[];
+      for(var y=0;y<off.height;y+=step){
+        for(var x=0;x<off.width;x+=step){
+          var k=(y*off.width+x)*4;
+          if(img[k+3]>128){
+            pts.push({
+              tx:(rH.left-rC.left+x)/W,
+              ty:(rH.top-rC.top+y - lh*0.06)/H,
+              lime: img[k]>200 && img[k+1]<90
+            });
+          }
+        }
+      }
+      if(pts.length<=5000) break;
+      step=5;
+    }
   }
+
+  var ps=[], LUT=null;
+  function curveXY(tt){
+    var i=Math.min(511, Math.max(0, Math.floor(tt*512)));
+    return LUT[i];
+  }
+  function build(){
+    sampleHeadline();
+    ps=[];
+    for(var i=0;i<pts.length;i++){
+      var q=pts[i];
+      ps.push({
+        sx:rand(), sy:rand(), x:0, y:0,
+        tx:q.tx, ty:q.ty, lime:q.lime,
+        sz:1.0+rand()*1.1, d:rand()*.3, tw:rand()*6.28,
+        vx:0, vy:0, ax:rand(), ay:rand()
+      });
+      ps[i].x=ps[i].sx; ps[i].y=ps[i].sy;
+    }
+  }
+
+  var SCATTER=1.0, FLOCK=2.5, FORM=4.0, HOLD=5.2, REVEALED=false;
 
   var dim=1, dimT=1;
   var ask=document.querySelector('.hero-ask input');
@@ -754,57 +837,135 @@ document.getElementById('testi').innerHTML = [
     ask.addEventListener('blur', function(){ if(!ask.value) dimT=1; });
   }
 
-  var start=performance.now(), sleeping=false;
-  // Debug/design hook: replay the intro from the console.
-  window.__heroPartRestart = function(){ start = performance.now(); };
+  var start=performance.now();
+  window.__heroPartRestart = function(){
+    start = performance.now(); REVEALED=false; h1.classList.remove('formed'); build();
+  };
+
+  function lime(a){ return 'rgba(195,243,92,'+a+')'; }
+  function ink(a){ return 'rgba(240,248,238,'+a+')'; }
+
   function tick(now){
     requestAnimationFrame(tick);
     var p=Math.min(1,Math.max(0,scrollY/(innerHeight*.7)));
     dim += (dimT-dim)*.08;
     var o=Math.pow(1-p,1.3)*dim;
     canvas.style.opacity=o.toFixed(3);
-    if(o<.02 || document.hidden){
-      // resuming must not replay the intro
-      if(!sleeping){ sleeping=true; }
-      start=Math.min(start, now-(RESOLVE+1)*1000);
-      return;
-    }
-    sleeping=false;
+    if(o<.02 || document.hidden) return;
+
     var el=(now-start)/1000;
     ctx.clearRect(0,0,W,H);
+
+    // dust — forever
+    for(var d=0; d<DUST.length; d++){
+      var q=DUST[d];
+      var dx=(q.x + el*.004*q.z) % 1;
+      var tw=.4+.6*Math.abs(Math.sin(el*.7+q.tw));
+      ctx.globalAlpha=.2*q.z*tw;
+      ctx.fillStyle=lime(1);
+      ctx.fillRect(dx*W, q.y*H, q.z*1.4, q.z*1.4);
+    }
+
+    if(small){ ctx.globalAlpha=1; return; }   // phones: type + dust only
+
+    if(!REVEALED && el>=HOLD){
+      REVEALED=true;
+      h1.classList.add('formed');
+      // The flock's final home: the growth line. Each particle is dealt a
+      // slot on eqPath — a tight band plus a few strays — so the sentence
+      // dissolves INTO the rising curve and breathes there forever.
+      var path=document.getElementById('eqPath');
+      if(path){
+        // One lookup table for the whole flock: 7k getPointAtLength calls per
+        // frame would melt; 512 samples once is free.
+        var len=path.getTotalLength();
+        LUT=[];
+        for(var li=0;li<=512;li++){
+          var lp=path.getPointAtLength((li/512)*len);
+          LUT.push([lp.x/1600, lp.y/900]);
+        }
+        for(var r=0;r<ps.length;r++){
+          var pr=ps[r];
+          var spread = rand()<.85 ? .012 : .05;
+          pr.ct=r/(ps.length-1);
+          pr.ox=(rand()-.5)*spread*.6;   // band offset across the line
+          pr.oy=(rand()-.5)*spread*2;
+          pr.spd=.8+rand()*.5;           // conveyor speed variance
+          pr.rd=rand()*.7;               // per-particle release stagger
+        }
+      }
+    }
+
     for(var i=0;i<ps.length;i++){
-      var q=ps[i], e=el-q.d, x, y, a;
+      var g=ps[i], e=el-g.d, x, y, a;
       if(e<SCATTER){
         var f0=Math.min(1,Math.max(0,e/SCATTER));
-        x=q.sx+n2(q.sx*6,q.sy*6,el)*.015;
-        y=q.sy+n2(q.sy*6,q.sx*6,el+40)*.02;
-        a=.55*f0;
+        x=g.sx+n2(g.sx*6,g.sy*6,el)*.015;
+        y=g.sy+n2(g.sy*6,g.sx*6,el+40)*.02;
+        a=.5*f0;
       } else if(e<FLOCK){
         var f=(e-SCATTER)/(FLOCK-SCATTER);
-        var sw=.06*(1-f*.6);
-        var nx=n2(q.x*4.2,q.y*4.2,el*.8), ny=n2(q.y*4.2+17,q.x*4.2-9,el*.8);
-        var pull=.012+.05*f*f;
-        q.x+=ny*sw*.016+(q.tx-q.x)*pull;
-        q.y+=-nx*sw*.016+(q.ty-q.y)*pull;
-        x=q.x; y=q.y; a=.68;
-      } else if(e<RESOLVE){
-        var f2=1-Math.pow(1-(e-FLOCK)/(RESOLVE-FLOCK),3);
-        q.x+=(q.tx-q.x)*(.08+.25*f2);
-        q.y+=(q.ty-q.y)*(.08+.25*f2);
-        x=q.x; y=q.y; a=.68+.12*f2;
+        var sw=.06*(1-f*.5);
+        var nx=n2(g.x*4.2,g.y*4.2,el*.8), ny=n2(g.y*4.2+17,g.x*4.2-9,el*.8);
+        var pull=.01+.05*f*f;
+        g.x+=ny*sw*.016+(g.tx-g.x)*pull;
+        g.y+=-nx*sw*.016+(g.ty-g.y)*pull;
+        x=g.x; y=g.y; a=.62;
+      } else if(e<FORM){
+        var f2=1-Math.pow(1-(e-FLOCK)/(FORM-FLOCK),3);
+        g.x+=(g.tx-g.x)*(.1+.3*f2);
+        g.y+=(g.ty-g.y)*(.1+.3*f2);
+        x=g.x; y=g.y; a=.62+.33*f2;
+      } else if(el<HOLD){
+        // the flock IS the sentence — sparkle while it holds
+        var s2=.75+.25*Math.sin(el*7+g.tw);
+        x=g.tx; y=g.ty; a=.95*s2;
       } else {
-        var w=Math.sin(el*1.4-q.t*9);
-        x=q.tx+n2(q.t*30,0,el*.5)*.0016;
-        y=q.ty+w*.0035;
-        a=.44+.36*Math.max(0,w);
+        // The type has taken over: the flock flies to the growth line and
+        // breathes there — a shimmer travels the curve; never a still frame.
+        // conveyor position: each particle travels the curve, wrapping at
+        // the crest back to the base — the river climbs forever
+        var tt=(g.ct + Math.max(0,(el-HOLD))*.015*g.spd) % 1;
+        var cp=curveXY(tt);
+        var t3=(el-HOLD-g.rd)/1.8;
+        if(t3<1){
+          var f3=1-Math.pow(1-Math.max(0,Math.min(1,t3)),3);
+          g.x+=((cp[0]+g.ox)-g.x)*(.05+.3*f3);
+          g.y+=((cp[1]+g.oy)-g.y)*(.05+.3*f3);
+          x=g.x; y=g.y;
+          a=.9-.4*f3;
+        } else {
+          x=cp[0]+g.ox+n2(tt*30,0,el*.5)*.0016;
+          y=cp[1]+g.oy+Math.sin(el*1.4-tt*9)*.0028;
+          // birth/death fade at the wrap so the loop point never pops,
+          // plus a travelling brightness pulse riding the stream
+          var edge=Math.min(1, Math.min(tt,1-tt)/.14);
+          edge=edge*edge*(3-2*edge);
+          var pulse=.6+.4*Math.sin(el*1.1-tt*7);
+          a=(.14+.34*pulse)*edge;
+        }
       }
       ctx.globalAlpha=a;
-      ctx.fillStyle=paint(q.h);
-      ctx.fillRect(x*W, y*H, q.sz, q.sz);
+      ctx.fillStyle=g.lime?lime(1):ink(1);
+      ctx.fillRect(x*W, y*H, g.sz, g.sz);
     }
     ctx.globalAlpha=1;
   }
-  requestAnimationFrame(tick);
+
+  var rsT=null;
+  addEventListener('resize', function(){
+    fit();
+    clearTimeout(rsT);
+    rsT=setTimeout(function(){ if(!small) build(); }, 180);
+  });
+
+  // Fonts must be ready before the letterforms are sampled.
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())
+    .then(function(){
+      if(small){ h1.classList.add('formed'); }
+      else build();
+      requestAnimationFrame(tick);
+    });
 })();
 
 (function heroExit(){
@@ -826,56 +987,6 @@ document.getElementById('testi').innerHTML = [
     center.style.transform = 'translate3d(0,' + (-p * 64) + 'px,0)';
     media.style.transform = 'translate3d(0,' + (cur * vh * .12) + 'px,0)';
   })();
-})();
-
-// Apple-style auto-type headline: caret types the line with human cadence,
-// the invisible ghost keeps the final layout so nothing shifts while typing.
-(function typeHero(){
-  var h1 = document.getElementById('heroH1'); if(!h1) return;
-  h1.dataset.split = 1;                                     // opt out of the word-reveal layer
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;   // static headline
-  var segs = [['Master trading with ', ''], ['method,', 'hl'], [' not hype.', '']];
-  h1.setAttribute('aria-label', segs.map(function(s){ return s[0]; }).join(''));
-  h1.innerHTML = '<span class="type-ghost" aria-hidden="true">' + h1.innerHTML + '</span>' +
-                 '<span class="type-live" aria-hidden="true"></span>';
-  var live = h1.querySelector('.type-live');
-  var caret = document.createElement('span'); caret.className = 'type-caret';
-  live.appendChild(caret);
-  // Flatten to a per-character plan with gentle, precomputed cadence,
-  // then run it on a rAF clock: no timer jitter, each glyph fades in.
-  var plan = [];
-  segs.forEach(function(s){
-    for(var k = 0; k < s[0].length; k++){
-      var ch = s[0][k];
-      plan.push({ch: ch, cls: s[1],
-        delay: ch === ',' ? 300 : ch === ' ' ? 52 : 40 + Math.random() * 14});
-    }
-  });
-  var cur = null, curCls = null, idx = 0, acc = 0, last = null, doneAt = 0;
-  function frame(now){
-    if(last === null) last = now;
-    acc += now - last; last = now;
-    var wrote = false;
-    while(idx < plan.length && acc >= plan[idx].delay){
-      acc -= plan[idx].delay;
-      var step = plan[idx++];
-      if(!cur || curCls !== step.cls){
-        cur = document.createElement('span');
-        curCls = step.cls; if(step.cls) cur.className = step.cls;
-        live.insertBefore(cur, caret);
-      }
-      if(step.ch === ' '){ cur.appendChild(document.createTextNode(' ')); }
-      else {
-        var c = document.createElement('span'); c.className = 'tc'; c.textContent = step.ch;
-        cur.appendChild(c);
-      }
-      wrote = true;
-    }
-    if(idx < plan.length){ requestAnimationFrame(frame); return; }
-    if(!doneAt){ doneAt = now; caret.classList.add('blink');
-      setTimeout(function(){ caret.style.opacity = 0; }, 2800); }
-  }
-  setTimeout(function(){ requestAnimationFrame(frame); }, 550);
 })();
 
 (function spotlight(){
