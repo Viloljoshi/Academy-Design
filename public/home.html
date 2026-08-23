@@ -765,7 +765,7 @@ document.getElementById('testi').innerHTML = [
   function addStar(x,y,layer){
     STARS.push({x:x, y:y, l:layer,                      // 0 far .. 2 near
       sz:(.5+rand()*.7)*(1+layer*.55),
-      tw:rand()*6.28, ts:.5+rand()*.9,                  // twinkle phase/speed
+      tw:rand()*6.28, ts:.9+rand()*1.6,                 // twinkle phase/speed
       gl:rand()<.05 ? rand()*20 : -1,                   // rare glint offset
       br:rand()<.045});                                 // bright star w/ glow
   }
@@ -782,6 +782,8 @@ document.getElementById('testi').innerHTML = [
   })();
   // cursor parallax: tiny, lerped, pointer:fine only
   var mx=0,my=0,mtx=0,mty=0;
+  // shooting star: one at a time, every 6–11s, a brief bright arc
+  var meteor=null, nextMeteor=3+rand()*4;
   if(matchMedia('(pointer:fine)').matches){
     addEventListener('pointermove',function(ev){
       mtx=ev.clientX/innerWidth-.5; mty=ev.clientY/innerHeight-.5;
@@ -882,8 +884,9 @@ document.getElementById('testi').innerHTML = [
     for(var d=0; d<STARS.length; d++){
       var q=STARS[d];
       var depth=(q.l+1)/3;
-      var dx=(q.x + el*.0035*depth) % 1;
-      var px=dx*W - mx*10*depth, py=q.y*H - my*7*depth;
+      var dx=(q.x + el*.030*depth) % 1;
+      var sway=Math.sin(el*.55+q.tw*2)*.013*depth;
+      var px=dx*W - mx*10*depth, py=(q.y+sway)*H - my*7*depth;
       var tw=.45+.55*Math.sin(el*q.ts+q.tw);
       var glint=q.gl>=0 ? Math.max(0, Math.sin(el*.5+q.gl))
         : 0;
@@ -900,7 +903,31 @@ document.getElementById('testi').innerHTML = [
       }
     }
 
-    if(small){ ctx.globalAlpha=1; return; }   // phones: type + dust only
+    // the shooting star — a rare, brief gift
+    if(el>nextMeteor && !meteor){
+      meteor={x:.15+rand()*.55, y:.08+rand()*.3, t:el,
+              dx:.28+rand()*.12, dy:.10+rand()*.08};
+      nextMeteor=el+4+rand()*4;
+    }
+    if(meteor){
+      var mt=(el-meteor.t)/.9;
+      if(mt>=1){ meteor=null; }
+      else{
+        var head=[(meteor.x+meteor.dx*mt)*W, (meteor.y+meteor.dy*mt)*H];
+        var tail=[(meteor.x+meteor.dx*Math.max(0,mt-.16))*W,
+                  (meteor.y+meteor.dy*Math.max(0,mt-.16))*H];
+        var fade=Math.sin(Math.PI*mt);
+        var grad=ctx.createLinearGradient(tail[0],tail[1],head[0],head[1]);
+        grad.addColorStop(0,'rgba(195,243,92,0)');
+        grad.addColorStop(1,'rgba(240,255,214,'+(.75*fade).toFixed(3)+')');
+        ctx.globalAlpha=1; ctx.strokeStyle=grad; ctx.lineWidth=1.6;
+        ctx.beginPath(); ctx.moveTo(tail[0],tail[1]); ctx.lineTo(head[0],head[1]); ctx.stroke();
+        ctx.globalAlpha=.9*fade;
+        ctx.drawImage(SPRITE, head[0]-7, head[1]-7, 14, 14);
+      }
+    }
+
+    if(small){ ctx.globalAlpha=1; return; }   // phones: type + starfield
 
     if(!REVEALED && el>=HOLD){
       REVEALED=true;
