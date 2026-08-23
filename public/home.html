@@ -801,7 +801,9 @@ document.getElementById('testi').innerHTML = [
   var pts=[];
   function sampleHeadline(){
     pts=[];
+    fit();   // layout may not have settled when this is called
     var rH = h1.getBoundingClientRect(), rC = canvas.getBoundingClientRect();
+    if(W<10 || rH.width<10){ setTimeout(build, 250); return; }
     var st = getComputedStyle(h1);
     // The flock's sentence is 22% larger than the DOM type: formation is the
     // hero moment and has to be readable from across the room. The ember
@@ -824,7 +826,7 @@ document.getElementById('testi').innerHTML = [
     o.textAlign='left';
     for(g=0;g<segs.length;g++){ o.fillStyle=segs[g][1]; o.fillText(segs[g][0], x0, lh*1.94); x0+=wds[g]; }
     var img=o.getImageData(0,0,off.width,off.height).data;
-    var step=3;
+    var step=2;
     for(var pass=0; pass<2; pass++){
       pts=[];
       for(var y=0;y<off.height;y+=step){
@@ -839,8 +841,8 @@ document.getElementById('testi').innerHTML = [
           }
         }
       }
-      if(pts.length<=8000) break;
-      step=4;
+      if(pts.length<=15000) break;
+      step=3;
     }
   }
 
@@ -857,10 +859,14 @@ document.getElementById('testi').innerHTML = [
         vx:0, vy:0, ax:rand(), ay:rand()
       });
       ps[i].x=ps[i].sx; ps[i].y=ps[i].sy;
+      if(pts[i].tx<txMin) txMin=pts[i].tx;
+      if(pts[i].tx>txMax) txMax=pts[i].tx;
     }
   }
 
-  var SCATTER=1.0, FLOCK=2.5, FORM=4.0, HOLD=5.2, REVEALED=false;
+  var SCATTER=1.0, FLOCK=2.5, SWEEP_END=5.1, HOLD=6.3, REVEALED=false;
+  // The typing sweep needs the sentence's horizontal extent.
+  var txMin=1, txMax=0;
 
   var dim=1, dimT=1;
   var ask=document.querySelector('.hero-ask input');
@@ -872,6 +878,10 @@ document.getElementById('testi').innerHTML = [
   var start=performance.now();
   window.__heroPartRestart = function(){
     start = performance.now(); REVEALED=false; h1.classList.remove('formed'); build();
+  };
+  window.__heroDebug = function(){
+    return {el:(performance.now()-start)/1000, ps:ps.length, pts:pts.length,
+            txMin:txMin, txMax:txMax, revealed:REVEALED, W:W, H:H};
   };
 
   function lime(a){ return 'rgba(195,243,92,'+a+')'; }
@@ -969,20 +979,32 @@ document.getElementById('testi').innerHTML = [
         g.x+=ny*sw*.016+(g.tx-g.x)*pull;
         g.y+=-nx*sw*.016+(g.ty-g.y)*pull;
         x=g.x; y=g.y; a=.62;
-      } else if(e<FORM){
-        var f2=1-Math.pow(1-(e-FLOCK)/(FORM-FLOCK),3);
-        g.x+=(g.tx-g.x)*(.1+.3*f2);
-        g.y+=(g.ty-g.y)*(.1+.3*f2);
-        x=g.x; y=g.y; a=.62+.38*f2;
-        ctx.globalAlpha=a; ctx.fillStyle=g.lime?lime(1):ink(1);
-        ctx.fillRect(x*W, y*H, g.sz*(1+.7*f2), g.sz*(1+.7*f2));
-        continue;
       } else if(el<HOLD){
-        // the flock IS the sentence — solid, with only a gentle breath
-        var s2=.9+.1*Math.sin(el*5+g.tw);
-        x=g.tx; y=g.ty; a=s2;
+        // THE STARLING MOVE: a sweep-front travels left to right across the
+        // sentence; the flock mass rides just ahead of it, and letters lock
+        // SOLID in its wake — the swarm literally types the words out.
+        var sf=Math.min(1,(el-FLOCK)/(SWEEP_END-FLOCK));          // front 0..1
+        var frontX=txMin + (txMax-txMin)*(sf*1.12);               // overshoot
+        var lead=(frontX-g.tx)/.09;                               // local lock
+        var lock=Math.max(0,Math.min(1,lead));
+        if(lock>=1){
+          // typed: solid letter dot, calm breath
+          var s2=.93+.07*Math.sin(el*5+g.tw);
+          ctx.globalAlpha=s2; ctx.fillStyle=g.lime?lime(1):ink(1);
+          ctx.fillRect(g.tx*W, g.ty*H, g.sz*1.9, g.sz*1.9);
+          g.x=g.tx; g.y=g.ty;
+          continue;
+        }
+        // untyped: swirl in the swarm mass hovering just ahead of the front
+        var swx=frontX+.10, swy=(g.ty*.5+.31);
+        var nx2=n2(g.x*5,g.y*5,el*.9), ny2=n2(g.y*5+11,g.x*5-7,el*.9);
+        var pl=.03+.12*lock;
+        g.x+=ny2*.0022+(swx+nx2*.05-g.x)*pl+(g.tx-g.x)*lock*.25;
+        g.y+=-nx2*.0022+(swy+ny2*.05-g.y)*pl+(g.ty-g.y)*lock*.25;
+        x=g.x; y=g.y;
+        a=.55+.4*lock;
         ctx.globalAlpha=a; ctx.fillStyle=g.lime?lime(1):ink(1);
-        ctx.fillRect(x*W, y*H, g.sz*1.7, g.sz*1.7);
+        ctx.fillRect(x*W, y*H, g.sz*(1+.9*lock), g.sz*(1+.9*lock));
         continue;
       } else {
         // Embers: the type has taken over; the flock drifts apart, rises a
