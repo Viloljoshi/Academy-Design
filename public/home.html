@@ -63,6 +63,17 @@
   @keyframes caretBlink{50%{opacity:0;}}
   .type-live .tc{opacity:0;animation:tcIn .16s ease-out forwards;}
   @keyframes tcIn{from{opacity:0;filter:blur(3px);}to{opacity:1;filter:blur(0);}}
+  /* the all-stars opening: the engine stamps .hero-seq at boot; everything
+     but the headline waits, then rises in staggered once .hero-revealed */
+  .hero-seq .hero-sub,.hero-seq .hero-ask,.hero-seq .hero-links,.hero-seq .hero-disc{
+    opacity:0;transform:translateY(18px);}
+  .hero-seq.hero-revealed .hero-sub,.hero-seq.hero-revealed .hero-ask,
+  .hero-seq.hero-revealed .hero-links,.hero-seq.hero-revealed .hero-disc{
+    opacity:1;transform:none;
+    transition:opacity .9s var(--ease),transform .9s var(--ease);}
+  .hero-seq.hero-revealed .hero-ask{transition-delay:.18s;}
+  .hero-seq.hero-revealed .hero-links{transition-delay:.36s;}
+  .hero-seq.hero-revealed .hero-disc{transition-delay:.52s;}
   /* particle handoff: the real type fades in as the flock releases */
   .type-reveal{position:absolute;inset:0;opacity:0;transition:opacity .9s var(--ease);}
   .hero-h1.formed .type-reveal{opacity:1;}
@@ -742,7 +753,9 @@ document.getElementById('testi').innerHTML = [
                  '<span class="type-reveal" aria-hidden="true">' + original + '</span>';
 
   var rv = h1.querySelector('.type-reveal');
+  var stage = document.getElementById('heroStage');
   if(reduced){ canvas.remove(); h1.classList.add('formed'); return; }
+  if(stage) stage.classList.add('hero-seq');
   var ctx = canvas.getContext('2d');
 
   var W=0, H=0;
@@ -775,7 +788,7 @@ document.getElementById('testi').innerHTML = [
       gl:rand()<.05 ? rand()*20 : -1,
       br:rand()<.065});
   }
-  for(var i=0;i<1500;i++) addStar(rand(), rand(), i%3);
+  for(var i=0;i<2300;i++) addStar(rand(), rand(), i%3);
   // soft-glow sprite, tinted to the brand — drawn, never blurred at runtime
   var SPRITE=document.createElement('canvas'); SPRITE.width=SPRITE.height=32;
   (function(){
@@ -866,7 +879,7 @@ document.getElementById('testi').innerHTML = [
     }
   }
 
-  var SCATTER=1.0, FLOCK=2.5, SWEEP_END=5.1, HOLD=6.3, REVEALED=false;
+  var SCATTER=1.5, FLOCK=3.3, SWEEP_END=6.5, HOLD=7.9, REVEALED=false;
   // The typing sweep needs the sentence's horizontal extent.
   var txMin=1, txMax=0, h1ux0=0, h1ux1=1;
 
@@ -880,6 +893,7 @@ document.getElementById('testi').innerHTML = [
   var start=performance.now();
   window.__heroPartRestart = function(){
     start = performance.now(); REVEALED=false; h1.classList.remove('formed');
+    if(stage) stage.classList.remove('hero-revealed');
     if(rv){ rv.style.transition='none'; rv.style.opacity='0'; rv.style.clipPath=''; }
     build();
   };
@@ -981,6 +995,7 @@ document.getElementById('testi').innerHTML = [
       REVEALED=true;
       if(rv){ rv.style.clipPath=''; rv.style.opacity=''; rv.style.transition=''; }
       h1.classList.add('formed');
+      if(stage) stage.classList.add('hero-revealed');
       // The exit: each particle becomes an ember — a soft personal drift
       // direction, slightly upward, and a staggered fade to nothing. The
       // sentence hands over to the type and the sky goes quiet.
@@ -1078,7 +1093,7 @@ document.getElementById('testi').innerHTML = [
   // Fonts must be ready before the letterforms are sampled.
   (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())
     .then(function(){
-      if(small){ h1.classList.add('formed'); }
+      if(small){ h1.classList.add('formed'); if(stage) stage.classList.add('hero-revealed'); }
       else build();
       requestAnimationFrame(tick);
     });
