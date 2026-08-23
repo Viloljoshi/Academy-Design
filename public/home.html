@@ -772,9 +772,9 @@ document.getElementById('testi').innerHTML = [
       sz:(.5+rand()*.7)*(1+layer*.55),
       tw:rand()*6.28, ts:.9+rand()*1.6,
       gl:rand()<.05 ? rand()*20 : -1,
-      br:rand()<.045});
+      br:rand()<.065});
   }
-  for(var i=0;i<820;i++) addStar(rand(), rand(), i%3);
+  for(var i=0;i<1500;i++) addStar(rand(), rand(), i%3);
   // soft-glow sprite, tinted to the brand — drawn, never blurred at runtime
   var SPRITE=document.createElement('canvas'); SPRITE.width=SPRITE.height=32;
   (function(){
@@ -901,7 +901,7 @@ document.getElementById('testi').innerHTML = [
       var glint=q.gl>=0 ? Math.max(0, Math.sin(el*.5+q.gl))
         : 0;
       glint=glint>.996 ? (glint-.996)/.004 : 0;         // rare, brief flash
-      var al=(.22+.4*depth)*Math.abs(tw)+.6*glint;
+      var al=(.26+.44*depth)*Math.abs(tw)+.6*glint;
       if(q.br){
         var sp=q.sz*7+glint*8;
         ctx.globalAlpha=Math.min(1,al+.12);
@@ -990,7 +990,7 @@ document.getElementById('testi').innerHTML = [
         // only the dust keeps the frame alive.
         var t3=(el-HOLD-g.rd)/2.5;
         if(t3>=1){
-          if(g.keep && STARS.length<1250){ addStar(g.x, g.y, 2); }
+          if(g.keep && STARS.length<2400){ addStar(g.x, g.y, 2); }
           g.keep=false;
           continue;
         }
