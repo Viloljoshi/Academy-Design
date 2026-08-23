@@ -925,25 +925,38 @@ document.getElementById('testi').innerHTML = [
 
     // the shooting star — a rare, brief gift
     if(el>nextMeteor && !meteor){
-      meteor={x:.15+rand()*.55, y:.08+rand()*.3, t:el,
-              dx:.28+rand()*.12, dy:.10+rand()*.08};
+      // A shooting star that trades: it streaks a mini price chart across
+      // the sky — up, pullback, up — always closing higher.
+      var mpts=[[.10+rand()*.5, .12+rand()*.35]], mseg=6;
+      for(var mi=0; mi<mseg; mi++){
+        var lp=mpts[mpts.length-1];
+        var up = (mi%2===0) || rand()<.7;      // rallies outnumber pullbacks
+        mpts.push([lp[0]+.045+rand()*.03,
+                   lp[1]+(up? -(.05+rand()*.05) : (.028+rand()*.022))]);
+      }
+      meteor={pts:mpts, t:el};
       nextMeteor=el+4+rand()*4;
     }
     if(meteor){
-      var mt=(el-meteor.t)/.9;
+      var mt=(el-meteor.t)/1.5;
       if(mt>=1){ meteor=null; }
       else{
-        var head=[(meteor.x+meteor.dx*mt)*W, (meteor.y+meteor.dy*mt)*H];
-        var tail=[(meteor.x+meteor.dx*Math.max(0,mt-.16))*W,
-                  (meteor.y+meteor.dy*Math.max(0,mt-.16))*H];
+        var P=meteor.pts, nseg=P.length-1;
+        var pos=mt*nseg, si=Math.min(nseg-1, Math.floor(pos)), sf=pos-si;
+        var hx=(P[si][0]+(P[si+1][0]-P[si][0])*sf)*W;
+        var hy=(P[si][1]+(P[si+1][1]-P[si][1])*sf)*H;
         var fade=Math.sin(Math.PI*mt);
-        var grad=ctx.createLinearGradient(tail[0],tail[1],head[0],head[1]);
+        var grad=ctx.createLinearGradient(P[0][0]*W,P[0][1]*H,hx,hy);
         grad.addColorStop(0,'rgba(195,243,92,0)');
-        grad.addColorStop(1,'rgba(240,255,214,'+(.75*fade).toFixed(3)+')');
+        grad.addColorStop(.6,'rgba(195,243,92,'+(.3*fade).toFixed(3)+')');
+        grad.addColorStop(1,'rgba(240,255,214,'+(.8*fade).toFixed(3)+')');
         ctx.globalAlpha=1; ctx.strokeStyle=grad; ctx.lineWidth=1.6;
-        ctx.beginPath(); ctx.moveTo(tail[0],tail[1]); ctx.lineTo(head[0],head[1]); ctx.stroke();
+        ctx.lineJoin='round';
+        ctx.beginPath(); ctx.moveTo(P[0][0]*W,P[0][1]*H);
+        for(var mj=1; mj<=si; mj++) ctx.lineTo(P[mj][0]*W,P[mj][1]*H);
+        ctx.lineTo(hx,hy); ctx.stroke();
         ctx.globalAlpha=.9*fade;
-        ctx.drawImage(SPRITE, head[0]-7, head[1]-7, 14, 14);
+        ctx.drawImage(SPRITE, hx-7, hy-7, 14, 14);
       }
     }
 
