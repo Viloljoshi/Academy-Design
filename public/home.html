@@ -877,11 +877,14 @@ document.getElementById('testi').innerHTML = [
   function build(){
     sampleHeadline();
     ps=[];
+    var AR0=(W>10&&H>10)?W/H:1.85;
+    var LB=[[0,0],[.09/AR0,-.08],[-.085/AR0,.07]];
     for(var i=0;i<pts.length;i++){
       var q=pts[i];
-      var ba=rand()*6.283, br_=Math.pow(rand(),.75)*.17;
+      var ba=rand()*6.283, br_=Math.pow(rand(),.8)*.21;
+      var lb=LB[(rand()*3)|0];
       ps.push({
-        sx:.5+Math.cos(ba)*br_, sy:.42+Math.sin(ba)*br_*.8, x:0, y:0,
+        sx:.5+lb[0]+Math.cos(ba)*br_/AR0, sy:.40+lb[1]+Math.sin(ba)*br_, x:0, y:0,
         tx:q.tx, ty:q.ty, lime:q.lime,
         sz:.9+rand()*.5, d:rand()*.3, tw:rand()*6.28,
         vx:0, vy:0, ax:rand(), ay:rand()
@@ -927,6 +930,7 @@ document.getElementById('testi').innerHTML = [
     if(o<.02 || document.hidden) return;
 
     var el=(now-start)/1000;
+    var AR=W/Math.max(1,H);
     ctx.clearRect(0,0,W,H);
 
     // the starfield — forever
@@ -1037,8 +1041,8 @@ document.getElementById('testi').innerHTML = [
         var cxx=.5+.14*n2(.3,9.1,el*.20), cyy=.40+.10*n2(7.2,3.4,el*.16);
         var nx=n2(g.x*4.6,g.y*4.6,el*.5), ny=n2(g.y*4.6+17,g.x*4.6-9,el*.5);
         var reach=.5+.7*Math.abs(n2(g.tw,g.tw*2,el*.32));
-        g.x+=ny*.0028+(cxx+nx*.10*reach-g.x)*.032;
-        g.y+=-nx*.0026+(cyy+ny*.082*reach-g.y)*.032;
+        g.x+=ny*.0028/AR+(cxx+nx*.11*reach/AR-g.x)*.032;
+        g.y+=-nx*.0026+(cyy+ny*.088*reach-g.y)*.032;
         x=g.x; y=g.y; a=.78*f0;
       } else if(el<HOLD){
         // THE STARLING MOVE, faithful: the mass sweeps left to right SITTING
