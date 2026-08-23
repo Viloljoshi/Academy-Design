@@ -832,7 +832,7 @@ document.getElementById('testi').innerHTML = [
       for(var y=0;y<off.height;y+=step){
         for(var x=0;x<off.width;x+=step){
           var k=(y*off.width+x)*4;
-          if(img[k+3]>128){
+          if(img[k+3]>150){
             pts.push({
               tx:(rH.left-rC.left+rH.width/2-off.width/2+x)/W,
               ty:(rH.top-rC.top+rH.height/2-off.height/2+y)/H,
@@ -855,7 +855,7 @@ document.getElementById('testi').innerHTML = [
       ps.push({
         sx:rand(), sy:rand(), x:0, y:0,
         tx:q.tx, ty:q.ty, lime:q.lime,
-        sz:1.0+rand()*1.1, d:rand()*.3, tw:rand()*6.28,
+        sz:.9+rand()*.5, d:rand()*.3, tw:rand()*6.28,
         vx:0, vy:0, ax:rand(), ay:rand()
       });
       ps[i].x=ps[i].sx; ps[i].y=ps[i].sy;
@@ -991,7 +991,7 @@ document.getElementById('testi').innerHTML = [
           // typed: solid letter dot, calm breath
           var s2=.93+.07*Math.sin(el*5+g.tw);
           ctx.globalAlpha=s2; ctx.fillStyle=g.lime?lime(1):ink(1);
-          ctx.fillRect(g.tx*W, g.ty*H, g.sz*1.9, g.sz*1.9);
+          ctx.fillRect(g.tx*W, g.ty*H, g.sz*1.55, g.sz*1.55);
           g.x=g.tx; g.y=g.ty;
           continue;
         }
@@ -1004,7 +1004,7 @@ document.getElementById('testi').innerHTML = [
         x=g.x; y=g.y;
         a=.55+.4*lock;
         ctx.globalAlpha=a; ctx.fillStyle=g.lime?lime(1):ink(1);
-        ctx.fillRect(x*W, y*H, g.sz*(1+.9*lock), g.sz*(1+.9*lock));
+        ctx.fillRect(x*W, y*H, g.sz*(1+.55*lock), g.sz*(1+.55*lock));
         continue;
       } else {
         // Embers: the type has taken over; the flock drifts apart, rises a
