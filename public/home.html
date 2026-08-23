@@ -996,6 +996,18 @@ document.getElementById('testi').innerHTML = [
 
     if(small){ ctx.globalAlpha=1; return; }   // phones: type + starfield
 
+    // The solid fill: the real font is revealed just behind the sweep
+    // frontier — which is always covered by the swarm mass, so the reveal
+    // edge is never visible. Straight to solid; no dotted font.
+    if(!small && !REVEALED && rv && el>FLOCK && el<HOLD){
+      var gsf=Math.min(1,(el-FLOCK)/(SWEEP_END-FLOCK));
+      var gFront=txMin+(txMax-txMin)*(gsf*1.15)-.02;
+      var fillPct=Math.max(0,Math.min(1,(gFront-h1ux0)/(h1ux1-h1ux0)));
+      rv.style.transition='none';
+      rv.style.opacity='1';
+      rv.style.clipPath='inset(-10% '+((1-fillPct)*100).toFixed(2)+'% -10% -5%)';
+    }
+
     if(!REVEALED && el>=HOLD){
       REVEALED=true;
       if(rv){ rv.style.clipPath=''; rv.style.opacity=''; rv.style.transition=''; }
@@ -1037,11 +1049,13 @@ document.getElementById('testi').innerHTML = [
         var lead=(frontX-g.tx)/.11;
         var lock=Math.max(0,Math.min(1,lead));
         if(lock>=1){
-          // this dot has become part of a letter — and it STAYS a letter,
-          // near-solid with a faint living breath, exactly like the ad
-          var s2=.92+.08*Math.sin(el*4+g.tw);
-          ctx.globalAlpha=s2; ctx.fillStyle=g.lime?lime(1):ink(1);
-          ctx.fillRect(g.tx*W, g.ty*H, g.sz*1.6, g.sz*1.6);
+          // the dot touches its letter for one bright instant, then the
+          // solid font (filling just behind, under the mass) replaces it
+          var lag=(frontX-g.tx-.02)/.05;
+          var hand=Math.max(0,1-Math.max(0,lag));
+          if(hand<=.02){ g.x=g.tx; g.y=g.ty; continue; }
+          ctx.globalAlpha=.95*hand; ctx.fillStyle=g.lime?lime(1):ink(1);
+          ctx.fillRect(g.tx*W, g.ty*H, g.sz*1.5, g.sz*1.5);
           g.x=g.tx; g.y=g.ty;
           continue;
         }
