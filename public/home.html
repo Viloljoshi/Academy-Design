@@ -878,13 +878,14 @@ document.getElementById('testi').innerHTML = [
     sampleHeadline();
     ps=[];
     var AR0=(W>10&&H>10)?W/H:1.85;
-    var LB=[[0,0],[.09/AR0,-.08],[-.085/AR0,.07]];
+    var LB=[[0,0],[.11/AR0,-.09],[-.10/AR0,.085]];
     for(var i=0;i<pts.length;i++){
       var q=pts[i];
-      var ba=rand()*6.283, br_=Math.pow(rand(),.8)*.21;
-      var lb=LB[(rand()*3)|0];
+      var ba=rand()*6.283, br_=Math.pow(rand(),.8)*.25;
+      var li=(rand()*3)|0, lb=LB[li];
       ps.push({
-        sx:.5+lb[0]+Math.cos(ba)*br_/AR0, sy:.40+lb[1]+Math.sin(ba)*br_, x:0, y:0,
+        lb:li,
+        sx:.5+lb[0]+Math.cos(ba)*br_/AR0, sy:.46+lb[1]+Math.sin(ba)*br_, x:0, y:0,
         tx:q.tx, ty:q.ty, lime:q.lime,
         sz:.9+rand()*.5, d:rand()*.3, tw:rand()*6.28,
         vx:0, vy:0, ax:rand(), ay:rand()
@@ -1038,7 +1039,9 @@ document.getElementById('testi').innerHTML = [
         // morphing like the reference's bird — a wandering centroid, curl
         // noise, and noise-modulated reach that grows limbs and lobes.
         var f0=Math.min(1,Math.max(0,e/.3));      // present almost instantly
-        var cxx=.5+.14*n2(.3,9.1,el*.20), cyy=.40+.10*n2(7.2,3.4,el*.16);
+        var li=g.lb||0;
+        var cxx=.5+.15*n2(.3+li*3.1,9.1+li*2.3,el*.20)/AR;
+        var cyy=.46+.12*n2(7.2+li*4.7,3.4+li*1.9,el*.16);
         var nx=n2(g.x*4.6,g.y*4.6,el*.5), ny=n2(g.y*4.6+17,g.x*4.6-9,el*.5);
         var reach=.5+.7*Math.abs(n2(g.tw,g.tw*2,el*.32));
         g.x+=ny*.0028/AR+(cxx+nx*.11*reach/AR-g.x)*.032;
