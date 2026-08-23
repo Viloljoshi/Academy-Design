@@ -879,7 +879,7 @@ document.getElementById('testi').innerHTML = [
     ps=[];
     for(var i=0;i<pts.length;i++){
       var q=pts[i];
-      var ba=rand()*6.283, br_=Math.pow(rand(),.6)*.55;
+      var ba=rand()*6.283, br_=Math.pow(rand(),.75)*.17;
       ps.push({
         sx:.5+Math.cos(ba)*br_, sy:.42+Math.sin(ba)*br_*.8, x:0, y:0,
         tx:q.tx, ty:q.ty, lime:q.lime,
@@ -941,11 +941,13 @@ document.getElementById('testi').innerHTML = [
       var rr=(q.bl+(q.r-q.bl)*birth)*(1+Math.sin(el*.5+q.tw)*.03);
       var px=(HUBX+Math.cos(ang)*rr)*W - mx*10*depth;
       var py=(HUBY+Math.sin(ang)*rr*FLAT)*H - my*7*depth;
+      var skyIn=small?1:Math.min(1,Math.max(0,(el-(HOLD-1.2))/2.2));
+      if(skyIn<=0) continue;
       var tw=.45+.55*Math.sin(el*q.ts+q.tw);
       var glint=q.gl>=0 ? Math.max(0, Math.sin(el*.5+q.gl))
         : 0;
       glint=glint>.996 ? (glint-.996)/.004 : 0;         // rare, brief flash
-      var al=((.26+.44*depth)*Math.abs(tw)+.6*glint)*(.6+.4*birth);
+      var al=((.26+.44*depth)*Math.abs(tw)+.6*glint)*(.6+.4*birth)*skyIn;
       if(q.br){
         var sp=q.sz*7+glint*8;
         ctx.globalAlpha=Math.min(1,al+.12);
@@ -958,7 +960,7 @@ document.getElementById('testi').innerHTML = [
     }
 
     // the shooting star — a rare, brief gift
-    if(el>nextMeteor && !meteor){
+    if(el>nextMeteor && !meteor && (small || el>HOLD+1)){
       // A shooting star that trades: it streaks a mini price chart across
       // the sky — up, pullback, up — always closing higher.
       var mpts=[[.10+rand()*.5, .12+rand()*.35]], mseg=6;
@@ -1031,13 +1033,13 @@ document.getElementById('testi').innerHTML = [
         // THE BLOB: one dense mass in the middle of the sky, swirling and
         // morphing like the reference's bird — a wandering centroid, curl
         // noise, and noise-modulated reach that grows limbs and lobes.
-        var f0=Math.min(1,Math.max(0,e/.8));
-        var cxx=.5+.30*n2(.3,9.1,el*.33), cyy=.46+.22*n2(7.2,3.4,el*.27);
-        var nx=n2(g.x*5.2,g.y*5.2,el*.9), ny=n2(g.y*5.2+17,g.x*5.2-9,el*.9);
-        var reach=.75+1.15*Math.abs(n2(g.tw,g.tw*2,el*.5));
-        g.x+=ny*.0035+(cxx+nx*.11*reach-g.x)*.045;
-        g.y+=-nx*.0032+(cyy+ny*.085*reach-g.y)*.045;
-        x=g.x; y=g.y; a=.68*f0;
+        var f0=Math.min(1,Math.max(0,e/.3));      // present almost instantly
+        var cxx=.5+.14*n2(.3,9.1,el*.20), cyy=.40+.10*n2(7.2,3.4,el*.16);
+        var nx=n2(g.x*4.6,g.y*4.6,el*.5), ny=n2(g.y*4.6+17,g.x*4.6-9,el*.5);
+        var reach=.5+.7*Math.abs(n2(g.tw,g.tw*2,el*.32));
+        g.x+=ny*.0028+(cxx+nx*.10*reach-g.x)*.032;
+        g.y+=-nx*.0026+(cyy+ny*.082*reach-g.y)*.032;
+        x=g.x; y=g.y; a=.78*f0;
       } else if(el<HOLD){
         // THE STARLING MOVE, faithful: the mass sweeps left to right SITTING
         // ON the unformed remainder of the line, and its own dots peel off
@@ -1061,13 +1063,13 @@ document.getElementById('testi').innerHTML = [
         }
         // still in the mass: the swarm hovers OVER the unformed text region,
         // spanning from the frontier to the line's end
-        var remain=Math.max(.12, txMax-frontX);
-        var swx=Math.min(txMax,frontX+remain*.42);
-        var swy=(g.ty*.6+.24);
-        var nx2=n2(g.x*4.2,g.y*4.2,el*.85), ny2=n2(g.y*4.2+11,g.x*4.2-7,el*.85);
-        var pl=.03+.1*lock;
-        g.x+=ny2*.0042+(swx+nx2*(remain*.7+.06)-g.x)*pl+(g.tx-g.x)*lock*.3;
-        g.y+=-nx2*.0042+(swy+ny2*.16-g.y)*pl+(g.ty-g.y)*lock*.3;
+        var remain=Math.max(.06, txMax-frontX);
+        var swx=Math.min(txMax,frontX+remain*.38);
+        var swy=(g.ty*.7+.15);
+        var nx2=n2(g.x*4.2,g.y*4.2,el*.6), ny2=n2(g.y*4.2+11,g.x*4.2-7,el*.6);
+        var pl=.032+.1*lock;
+        g.x+=ny2*.0034+(swx+nx2*(remain*.55+.03)-g.x)*pl+(g.tx-g.x)*lock*.3;
+        g.y+=-nx2*.0034+(swy+ny2*(.05+remain*.28)-g.y)*pl+(g.ty-g.y)*lock*.3;
         x=g.x; y=g.y;
         a=.55+.4*lock;
         ctx.globalAlpha=a; ctx.fillStyle=g.lime?lime(1):ink(1);
