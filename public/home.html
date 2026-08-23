@@ -71,9 +71,10 @@
   .hero-seq.hero-revealed .hero-links,.hero-seq.hero-revealed .hero-disc{
     opacity:1;transform:none;
     transition:opacity .9s var(--ease),transform .9s var(--ease);}
-  .hero-seq.hero-revealed .hero-ask{transition-delay:.18s;}
-  .hero-seq.hero-revealed .hero-links{transition-delay:.36s;}
-  .hero-seq.hero-revealed .hero-disc{transition-delay:.52s;}
+  .hero-seq.hero-revealed .hero-sub{transition-delay:.45s;}
+  .hero-seq.hero-revealed .hero-ask{transition-delay:.85s;}
+  .hero-seq.hero-revealed .hero-links{transition-delay:1.2s;}
+  .hero-seq.hero-revealed .hero-disc{transition-delay:1.45s;}
   /* particle handoff: the real type fades in as the flock releases */
   .type-reveal{position:absolute;inset:0;opacity:0;transition:opacity .9s var(--ease);}
   .hero-h1.formed .type-reveal{opacity:1;}
@@ -867,8 +868,9 @@ document.getElementById('testi').innerHTML = [
     ps=[];
     for(var i=0;i<pts.length;i++){
       var q=pts[i];
+      var ba=rand()*6.283, br_=Math.pow(rand(),.6)*.085;
       ps.push({
-        sx:rand(), sy:rand(), x:0, y:0,
+        sx:.5+Math.cos(ba)*br_, sy:.42+Math.sin(ba)*br_*.8, x:0, y:0,
         tx:q.tx, ty:q.ty, lime:q.lime,
         sz:.9+rand()*.5, d:rand()*.3, tw:rand()*6.28,
         vx:0, vy:0, ax:rand(), ay:rand()
@@ -1010,19 +1012,17 @@ document.getElementById('testi').innerHTML = [
 
     for(var i=0;i<ps.length;i++){
       var g=ps[i], e=el-g.d, x, y, a;
-      if(e<SCATTER){
-        var f0=Math.min(1,Math.max(0,e/SCATTER));
-        x=g.sx+n2(g.sx*6,g.sy*6,el)*.015;
-        y=g.sy+n2(g.sy*6,g.sx*6,el+40)*.02;
-        a=.5*f0;
-      } else if(e<FLOCK){
-        var f=(e-SCATTER)/(FLOCK-SCATTER);
-        var sw=.06*(1-f*.5);
-        var nx=n2(g.x*4.2,g.y*4.2,el*.8), ny=n2(g.y*4.2+17,g.x*4.2-9,el*.8);
-        var pull=.01+.05*f*f;
-        g.x+=ny*sw*.016+(g.tx-g.x)*pull;
-        g.y+=-nx*sw*.016+(g.ty-g.y)*pull;
-        x=g.x; y=g.y; a=.62;
+      if(e<FLOCK){
+        // THE BLOB: one dense mass in the middle of the sky, swirling and
+        // morphing like the reference's bird — a wandering centroid, curl
+        // noise, and noise-modulated reach that grows limbs and lobes.
+        var f0=Math.min(1,Math.max(0,e/.8));
+        var cxx=.5+.13*n2(.3,9.1,el*.33), cyy=.40+.09*n2(7.2,3.4,el*.27);
+        var nx=n2(g.x*5.2,g.y*5.2,el*.9), ny=n2(g.y*5.2+17,g.x*5.2-9,el*.9);
+        var reach=.45+.55*Math.abs(n2(g.tw,g.tw*2,el*.5));
+        g.x+=ny*.0035+(cxx+nx*.11*reach-g.x)*.045;
+        g.y+=-nx*.0032+(cyy+ny*.085*reach-g.y)*.045;
+        x=g.x; y=g.y; a=.68*f0;
       } else if(el<HOLD){
         // THE STARLING MOVE: a sweep-front travels left to right across the
         // sentence; the flock mass rides just ahead of it, letters lock as
