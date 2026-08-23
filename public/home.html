@@ -741,6 +741,7 @@ document.getElementById('testi').innerHTML = [
   h1.innerHTML = '<span class="type-ghost" aria-hidden="true">' + original + '</span>' +
                  '<span class="type-reveal" aria-hidden="true">' + original + '</span>';
 
+  var rv = h1.querySelector('.type-reveal');
   if(reduced){ canvas.remove(); h1.classList.add('formed'); return; }
   var ctx = canvas.getContext('2d');
 
@@ -804,6 +805,7 @@ document.getElementById('testi').innerHTML = [
     fit();   // layout may not have settled when this is called
     var rH = h1.getBoundingClientRect(), rC = canvas.getBoundingClientRect();
     if(W<10 || rH.width<10){ setTimeout(build, 250); return; }
+    h1ux0=(rH.left-rC.left)/W; h1ux1=(rH.left-rC.left+rH.width)/W;
     var st = getComputedStyle(h1);
     // The flock's sentence is 22% larger than the DOM type: formation is the
     // hero moment and has to be readable from across the room. The ember
@@ -866,7 +868,7 @@ document.getElementById('testi').innerHTML = [
 
   var SCATTER=1.0, FLOCK=2.5, SWEEP_END=5.1, HOLD=6.3, REVEALED=false;
   // The typing sweep needs the sentence's horizontal extent.
-  var txMin=1, txMax=0;
+  var txMin=1, txMax=0, h1ux0=0, h1ux1=1;
 
   var dim=1, dimT=1;
   var ask=document.querySelector('.hero-ask input');
@@ -877,7 +879,9 @@ document.getElementById('testi').innerHTML = [
 
   var start=performance.now();
   window.__heroPartRestart = function(){
-    start = performance.now(); REVEALED=false; h1.classList.remove('formed'); build();
+    start = performance.now(); REVEALED=false; h1.classList.remove('formed');
+    if(rv){ rv.style.transition='none'; rv.style.opacity='0'; rv.style.clipPath=''; }
+    build();
   };
   window.__heroDebug = function(){
     return {el:(performance.now()-start)/1000, ps:ps.length, pts:pts.length,
@@ -962,8 +966,20 @@ document.getElementById('testi').innerHTML = [
 
     if(small){ ctx.globalAlpha=1; return; }   // phones: type + starfield
 
+    // The gradual fill: the real font is revealed left-to-right a beat
+    // behind the sweep front, so dots become solid type continuously.
+    if(!small && !REVEALED && rv && el>FLOCK && el<HOLD){
+      var gsf=Math.min(1,(el-FLOCK)/(SWEEP_END-FLOCK));
+      var gFront=txMin+(txMax-txMin)*(gsf*1.12)-.055;             // trail the dots
+      var fillPct=Math.max(0,Math.min(1,(gFront-h1ux0)/(h1ux1-h1ux0)));
+      rv.style.transition='none';
+      rv.style.opacity='1';
+      rv.style.clipPath='inset(-10% '+((1-fillPct)*100).toFixed(2)+'% -10% -5%)';
+    }
+
     if(!REVEALED && el>=HOLD){
       REVEALED=true;
+      if(rv){ rv.style.clipPath=''; rv.style.opacity=''; rv.style.transition=''; }
       h1.classList.add('formed');
       // The exit: each particle becomes an ember — a soft personal drift
       // direction, slightly upward, and a staggered fade to nothing. The
@@ -994,15 +1010,20 @@ document.getElementById('testi').innerHTML = [
         x=g.x; y=g.y; a=.62;
       } else if(el<HOLD){
         // THE STARLING MOVE: a sweep-front travels left to right across the
-        // sentence; the flock mass rides just ahead of it, and letters lock
-        // SOLID in its wake — the swarm literally types the words out.
+        // sentence; the flock mass rides just ahead of it, letters lock as
+        // dots — and the REAL solid font fills in just behind the front
+        // (clip-driven below), the dots dissolving as it replaces them.
         var sf=Math.min(1,(el-FLOCK)/(SWEEP_END-FLOCK));          // front 0..1
         var frontX=txMin + (txMax-txMin)*(sf*1.12);               // overshoot
         var lead=(frontX-g.tx)/.09;                               // local lock
         var lock=Math.max(0,Math.min(1,lead));
         if(lock>=1){
-          // typed: solid letter dot, calm breath
-          var s2=.93+.07*Math.sin(el*5+g.tw);
+          // typed: the solid type is catching up from behind — the dot
+          // burns bright at the front, then hands over and fades away
+          var lag=(frontX-g.tx-.055)/.09;
+          var hand=Math.max(0,1-Math.max(0,lag));
+          if(hand<=.02){ g.x=g.tx; g.y=g.ty; continue; }
+          var s2=(.93+.07*Math.sin(el*5+g.tw))*hand;
           ctx.globalAlpha=s2; ctx.fillStyle=g.lime?lime(1):ink(1);
           ctx.fillRect(g.tx*W, g.ty*H, g.sz*1.55, g.sz*1.55);
           g.x=g.tx; g.y=g.ty;
