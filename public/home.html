@@ -793,7 +793,7 @@ document.getElementById('testi').innerHTML = [
   function addStar(x,y,layer,mature){
     var dx=x-HUBX, dy=(y-HUBY)/FLAT;
     STARS.push({r:Math.sqrt(dx*dx+dy*dy), an:Math.atan2(dy,dx),
-      bd:mature ? -99 : rand()*.6,      // brief ball, then the full sky fast
+      bd:-99,                            // the whole sky is there on load
       bl:.03+Math.pow(rand(),.7)*.13,   // waiting radius inside the big ball
       l:layer,
       sz:(.5+rand()*.7)*(1+layer*.55),
@@ -877,19 +877,12 @@ document.getElementById('testi').innerHTML = [
   function build(){
     sampleHeadline();
     ps=[];
-    var AR0=(W>10&&H>10)?W/H:1.85;
     for(var i=0;i<pts.length;i++){
       var q=pts[i];
-      var t_=Math.pow(rand(),1.35), it_=1-t_;
-      var qx0=it_*it_*(-.02)+2*it_*t_*.06+t_*t_*.10;
-      var qy0=it_*it_*(-.16)+2*it_*t_*.02+t_*t_*.22;
-      var orr=Math.pow(rand(),.55), oa=rand()*6.283;
-      var th0=.17*(1-t_*.72)*orr;
       ps.push({
-        st:t_, oa:oa, orr:orr,
-        sx:.5+(qx0+Math.cos(oa)*th0)/AR0, sy:.46+qy0+Math.sin(oa)*th0, x:0, y:0,
+        sx:.02+rand()*.96, sy:.03+rand()*.94, x:0, y:0,
         tx:q.tx, ty:q.ty, lime:q.lime,
-        sz:.9+rand()*.5, d:rand()*.3, tw:rand()*6.28,
+        sz:.9+rand()*.5, d:rand()*.5, tw:rand()*6.28,
         vx:0, vy:0, ax:rand(), ay:rand()
       });
       ps[i].x=ps[i].sx; ps[i].y=ps[i].sy;
@@ -898,7 +891,7 @@ document.getElementById('testi').innerHTML = [
     }
   }
 
-  var SCATTER=1.5, FLOCK=2.6, SWEEP_END=5.6, HOLD=6.9, REVEALED=false;
+  var CONV=3.4, HOLD=3.8, REVEALED=false;
   // The typing sweep needs the sentence's horizontal extent.
   var txMin=1, txMax=0, h1ux0=0, h1ux1=1;
 
@@ -952,13 +945,11 @@ document.getElementById('testi').innerHTML = [
       var rr=(q.bl+(q.r-q.bl)*birth)*(1+Math.sin(el*.5+q.tw)*.03);
       var px=(HUBX+Math.cos(ang)*rr)*W - mx*10*depth;
       var py=(HUBY+Math.sin(ang)*rr*FLAT)*H - my*7*depth;
-      var skyIn=small?1:Math.min(1,Math.max(0,(el-(HOLD-1.2))/2.2));
-      if(skyIn<=0) continue;
       var tw=.45+.55*Math.sin(el*q.ts+q.tw);
       var glint=q.gl>=0 ? Math.max(0, Math.sin(el*.5+q.gl))
         : 0;
       glint=glint>.996 ? (glint-.996)/.004 : 0;         // rare, brief flash
-      var al=((.26+.44*depth)*Math.abs(tw)+.6*glint)*(.6+.4*birth)*skyIn;
+      var al=((.26+.44*depth)*Math.abs(tw)+.6*glint)*(.6+.4*birth);
       if(q.br){
         var sp=q.sz*7+glint*8;
         ctx.globalAlpha=Math.min(1,al+.12);
@@ -1009,18 +1000,6 @@ document.getElementById('testi').innerHTML = [
 
     if(small){ ctx.globalAlpha=1; return; }   // phones: type + starfield
 
-    // The solid fill: the real font is revealed just behind the sweep
-    // frontier — which is always covered by the swarm mass, so the reveal
-    // edge is never visible. Straight to solid; no dotted font.
-    if(!small && !REVEALED && rv && el>FLOCK && el<HOLD){
-      var gsf=Math.min(1,(el-FLOCK)/(SWEEP_END-FLOCK));
-      var gFront=txMin+(txMax-txMin)*(gsf*1.15)-.02;
-      var fillPct=Math.max(0,Math.min(1,(gFront-h1ux0)/(h1ux1-h1ux0)));
-      rv.style.transition='none';
-      rv.style.opacity='1';
-      rv.style.clipPath='inset(-10% '+((1-fillPct)*100).toFixed(2)+'% -10% -5%)';
-    }
-
     if(!REVEALED && el>=HOLD){
       REVEALED=true;
       if(rv){ rv.style.clipPath=''; rv.style.opacity=''; rv.style.transition=''; }
@@ -1038,86 +1017,22 @@ document.getElementById('testi').innerHTML = [
       }
     }
 
-    // Art-directed drift, following the client's storyboard frames: the
-    // spine morphs ball → comma → mushroom → curling hook → wide wing
-    // stretching right, then hands off to the sweep.
-    var SP=null;
-    if(el<FLOCK+.5){
-      var KT=[0,.65,1.3,1.9,2.35,2.6];
-      var KP=[[-.02,-.16,.06,.02,.10,.22,1],
-              [-.06,-.20,.10,0,.14,.28,1],
-              [-.16,-.18,.10,-.14,.02,.30,1.1],
-              [-.18,.06,-.02,-.22,.20,-.06,1.15],
-              [-.28,.02,.02,-.16,.34,-.02,1.2],
-              [-.34,.06,.04,-.08,.42,0,1.15]];
-      var ki=0; while(ki<KT.length-2 && el>KT[ki+1]) ki++;
-      var ku=Math.min(1,Math.max(0,(el-KT[ki])/(KT[ki+1]-KT[ki])));
-      var A=KP[Math.max(0,ki-1)], B=KP[ki], C=KP[ki+1],
-          D=KP[Math.min(KP.length-1,ki+2)];
-      SP=[];
-      for(var kk=0;kk<7;kk++){
-        var u2=ku*ku, u3=u2*ku;
-        SP[kk]=.5*((2*B[kk])+(-A[kk]+C[kk])*ku+
-                   (2*A[kk]-5*B[kk]+4*C[kk]-D[kk])*u2+
-                   (-A[kk]+3*B[kk]-3*C[kk]+D[kk])*u3);
-      }
-    }
-
     for(var i=0;i<ps.length;i++){
       var g=ps[i], e=el-g.d, x, y, a;
-      if(e<FLOCK && SP){
-        // THE BLOB: one dense mass in the middle of the sky, swirling and
-        // morphing like the reference's bird — a wandering centroid, curl
-        // noise, and noise-modulated reach that grows limbs and lobes.
-        var f0=Math.min(1,Math.max(0,e/.3));      // present almost instantly
-        var t=g.st, it=1-t;
-        var p0x=SP[0]+.025*n2(1.1,2.2,el*.3), p0y=SP[1]+.025*n2(3.3,1.7,el*.27);
-        var p1x=SP[2]+.03*n2(5.1,4.2,el*.26), p1y=SP[3]+.03*n2(2.9,6.1,el*.29);
-        var p2x=SP[4]+.03*n2(7.7,1.3,el*.28), p2y=SP[5]+.03*n2(4.4,8.8,el*.24);
-        var qx=it*it*p0x+2*it*t*p1x+t*t*p2x;
-        var qy=it*it*p0y+2*it*t*p1y+t*t*p2y;
-        var th=.17*(1-t*.72)*g.orr*SP[6];
-        var ao=g.oa+el*.22;
-        var txq=.5+(qx+Math.cos(ao)*th)/AR;
-        var tyq=.46+qy+Math.sin(ao)*th;
-        var nx=n2(g.x*4.6,g.y*4.6,el*.5), ny=n2(g.y*4.6+17,g.x*4.6-9,el*.5);
-        g.x+=ny*.0022/AR*dt+(txq+nx*.03/AR-g.x)*dk(.05,dt);
-        g.y+=-nx*.002*dt+(tyq+ny*.03-g.y)*dk(.05,dt);
-        x=g.x; y=g.y; a=.78*f0;
-      } else if(el<HOLD){
-        // THE STARLING MOVE, faithful: the mass sweeps left to right SITTING
-        // ON the unformed remainder of the line, and its own dots peel off
-        // into the letterforms — the font is literally built from the swarm,
-        // ragged at the frontier, dense to near-solid behind it. No clip, no
-        // hard edge, no empty gap: where text hasn't formed, the swarm IS.
-        var sf=Math.min(1,(el-FLOCK)/(SWEEP_END-FLOCK));          // front 0..1
-        var frontX=txMin + (txMax-txMin)*(sf*1.15);               // overshoot
-        var lead=(frontX-g.tx)/.11;
-        var lock=Math.max(0,Math.min(1,lead));
-        if(lock>=1){
-          // the dot touches its letter for one bright instant, then the
-          // solid font (filling just behind, under the mass) replaces it
-          var lag=(frontX-g.tx-.02)/.05;
-          var hand=Math.max(0,1-Math.max(0,lag));
-          if(hand<=.02){ g.x=g.tx; g.y=g.ty; continue; }
-          ctx.globalAlpha=.95*hand; ctx.fillStyle=g.lime?lime(1):ink(1);
-          ctx.fillRect(g.tx*W, g.ty*H, g.sz*1.5, g.sz*1.5);
-          g.x=g.tx; g.y=g.ty;
-          continue;
-        }
-        // still in the mass: the swarm hovers OVER the unformed text region,
-        // spanning from the frontier to the line's end
-        var remain=Math.max(.06, txMax-frontX);
-        var swx=Math.min(txMax,frontX+remain*.38);
-        var swy=(g.ty*.7+.145)-remain*.16;
-        var nx2=n2(g.x*4.2,g.y*4.2,el*.6), ny2=n2(g.y*4.2+11,g.x*4.2-7,el*.6);
-        var pl=.032+.1*lock;
-        g.x+=ny2*.0034*dt+(swx+nx2*(remain*.55+.03)-g.x)*dk(pl,dt)+(g.tx-g.x)*dk(lock*.3,dt);
-        g.y+=-nx2*.0034*dt+(swy+ny2*(.05+remain*.28)-g.y)*dk(pl,dt)+(g.ty-g.y)*dk(lock*.3,dt);
-        x=g.x; y=g.y;
-        a=.55+.4*lock;
+      if(el<HOLD){
+        // THE FIRST VERSION, refined: the whole page is dots; each drifts
+        // from its home in the sky and settles on its letter. The sentence
+        // then hands straight to the solid type — never a dotted font.
+        var s=Math.min(1,Math.max(0,e/CONV));
+        s=s*s*(3-2*s);
+        var wob=1-s;
+        x=g.sx+(g.tx-g.sx)*s + n2(g.sx*3.1,g.sy*3.1,el*.45)*.085*wob;
+        y=g.sy+(g.ty-g.sy)*s + n2(g.sy*3.3+7,g.sx*3.3-4,el*.45)*.07*wob;
+        a=(.32+.63*s)*Math.min(1,el/.4)*(.72+.28*Math.sin(el*1.6+g.tw));
+        g.x=x; g.y=y;
         ctx.globalAlpha=a; ctx.fillStyle=g.lime?lime(1):ink(1);
-        ctx.fillRect(x*W, y*H, g.sz*(1+.5*lock), g.sz*(1+.5*lock));
+        var s4=g.sz*(.9+.5*s);
+        ctx.fillRect(x*W, y*H, s4, s4);
         continue;
       } else {
         // Embers: the type has taken over; the flock drifts apart, rises a
