@@ -1417,11 +1417,8 @@ if(big){
     gsap.fromTo(tile,{y:34+(i%3)*18},{y:-(10+(i%3)*10),ease:'none',
       scrollTrigger:{trigger:'#toolkit',start:'top 90%',end:'bottom 10%',scrub:true}});
   });
-  /* ── Testimonials + stats: entrance pops (once) ── */
-  gsap.from('#testi>*',{y:44,autoAlpha:0,duration:.9,ease:'power3.out',stagger:.12,
-    scrollTrigger:{trigger:'#testi',start:'top 82%'}});
-  gsap.from('.fx-stat',{scale:.82,autoAlpha:0,duration:.7,ease:'back.out(1.6)',stagger:.09,
-    scrollTrigger:{trigger:'#ctaStats',start:'top 85%'}});
+  /* testimonials + stats reveals are owned by the fxm kit — a second
+     GSAP hide here double-hides and can stick at opacity 0. Removed. */
 
   /* ── Vanta 3D layer: joins only AFTER the approved formation lands ── */
   var hero=document.getElementById('hero');
