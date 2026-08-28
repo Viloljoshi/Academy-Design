@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FX Academy · Master Forex Trading the Right Way</title>
+<title>The Trading Lab · Master Forex Trading the Right Way</title>
 <meta name="description" content="Structured forex education, live webinars, AI course support and built-in trading tools, one disciplined platform.">
 <link rel="stylesheet" href="../assets/lumina.css">
 <script src="../assets/shell.js"></script>
+<script src="../assets/vendor/lenis.min.js" defer></script>
+<script src="../assets/vendor/gsap.min.js" defer></script>
+<script src="../assets/vendor/ScrollTrigger.min.js" defer></script>
 <script src="../assets/lumina.js"></script>
 <style>
   /* ---- Hero: fully automatic film, free-flowing scroll ----
@@ -223,6 +226,21 @@
     .tier-strip{grid-template-columns:1fr;}
     .u-cols{grid-template-columns:1fr;}
   }
+/* Brand ticker: an infinite ribbon on the hero's lower edge. */
+.fx-ticker{background:var(--c-deep,#0c1210);border-block:1px solid rgba(195,243,92,.14);
+  overflow:hidden;padding:13px 0;position:relative;z-index:2;}
+.fx-ticker-track{display:flex;gap:52px;width:max-content;padding-left:52px;
+  animation:fxTick 46s linear infinite;}
+.fx-ticker:hover .fx-ticker-track{animation-play-state:paused;}
+.fx-ti{font-family:var(--font-display);font-weight:700;font-size:12.5px;
+  letter-spacing:.15em;text-transform:uppercase;white-space:nowrap;
+  color:var(--d-ink-var,#93a29b);display:flex;align-items:center;gap:12px;}
+.fx-ti b{color:var(--lime,#c3f35c);font-weight:700;}
+.fx-ti .up{color:var(--lime,#c3f35c);font-size:10px;}
+.fx-ti::after{content:'';width:4px;height:4px;border-radius:99px;
+  background:rgba(195,243,92,.45);margin-left:40px;}
+@keyframes fxTick{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion: reduce){.fx-ticker-track{animation:none;}}
 </style>
 </head>
 <body>
@@ -298,7 +316,7 @@
   <div class="wrap" style="text-align:center;">
     <div class="eyebrow">The problem</div>
     <h2 class="h-lg" style="max-width:820px;margin:14px auto 0;">Most traders jump between YouTube, Discord, spreadsheets, and random strategies.</h2>
-    <p class="body-lg" style="max-width:620px;margin:18px auto 0;">FX Academy brings learning, practice, journaling, and feedback into one structured system, so progress is visible and discipline compounds.</p>
+    <p class="body-lg" style="max-width:620px;margin:18px auto 0;">The Trading Lab brings learning, practice, journaling, and feedback into one structured system, so progress is visible and discipline compounds.</p>
     <div class="grid" id="problems" style="grid-template-columns:repeat(4,1fr);margin-top:48px;text-align:left;"></div>
   </div>
 </section>
@@ -306,7 +324,7 @@
 <!-- HOW IT WORKS -->
 <section class="section" id="method" style="background:var(--c-low);">
   <div class="wrap">
-    <div class="eyebrow">How FX Academy works</div>
+    <div class="eyebrow">How The Trading Lab works</div>
     <h2 class="h-lg" style="margin:14px 0 40px;">A disciplined loop, not a feed of tips.</h2>
     <div class="grid" style="grid-template-columns:1fr 1fr;gap:28px 56px;" id="steps"></div>
   </div>
@@ -543,7 +561,7 @@
     <div class="eyebrow">From the community</div>
     <h2 class="h-lg" style="margin:14px 0 36px;">Built for traders who want a process.</h2>
     <div class="grid" style="grid-template-columns:repeat(3,1fr);" id="testi"></div>
-    <p class="muted" style="font-size:12.5px;margin-top:20px;text-align:center;">Member experiences. FX Academy does not imply or guarantee trading profits.</p>
+    <p class="muted" style="font-size:12.5px;margin-top:20px;text-align:center;">Member experiences. The Trading Lab does not imply or guarantee trading profits.</p>
   </div>
 </section>
 
@@ -572,7 +590,7 @@
 // Referral banner via ?ref=
 const ref = new URLSearchParams(location.search).get('ref');
 if(ref && /^[a-z0-9 ]{2,30}$/i.test(ref)){
-  document.getElementById('ref').innerHTML = `<div class="ref-banner">You were referred by <strong>${ref}</strong>, welcome to FX Academy.</div>`;
+  document.getElementById('ref').innerHTML = `<div class="ref-banner">You were referred by <strong>${ref}</strong>, welcome to The Trading Lab.</div>`;
 }
 document.getElementById('nav').innerHTML = FXShell.publicNav('Home', {overHero:true});
 document.getElementById('footer').innerHTML = FXShell.footer();
@@ -796,12 +814,13 @@ document.getElementById('testi').innerHTML = [
       bd:-99,                            // the whole sky is there on load
       bl:.03+Math.pow(rand(),.7)*.13,   // waiting radius inside the big ball
       l:layer,
-      sz:(.5+rand()*.7)*(1+layer*.55),
+      sz:(.5+rand()*.7)*(1+layer*.55)*(layer===3?2.4:1),
       tw:rand()*6.28, ts:.9+rand()*1.6,
       gl:rand()<.05 ? rand()*20 : -1,
-      br:rand()<.085});
+      br:layer===3?true:rand()<.085});
   }
   for(var i=0;i<3600;i++) addStar(rand(), rand(), i%3);
+  for(var ib=0;ib<42;ib++) addStar(rand(), rand(), 3);   // bokeh near-layer
   // soft-glow sprite, tinted to the brand — drawn, never blurred at runtime
   var SPRITE=document.createElement('canvas'); SPRITE.width=SPRITE.height=32;
   (function(){
@@ -943,8 +962,9 @@ document.getElementById('testi').innerHTML = [
       var birth=Math.min(1,Math.max(0,(el-q.bd)/.8));
       birth=1-Math.pow(1-birth,3);
       var rr=(q.bl+(q.r-q.bl)*birth)*(1+Math.sin(el*.5+q.tw)*.03);
-      var px=(HUBX+Math.cos(ang)*rr)*W - mx*10*depth;
-      var py=(HUBY+Math.sin(ang)*rr*FLAT)*H - my*7*depth;
+      var pb=q.l===3?2.3:1;                  // near layer counter-drifts hard
+      var px=(HUBX+Math.cos(ang)*rr)*W - mx*30*depth*pb;
+      var py=(HUBY+Math.sin(ang)*rr*FLAT)*H - my*22*depth*pb;
       var tw=.45+.55*Math.sin(el*q.ts+q.tw);
       var glint=q.gl>=0 ? Math.max(0, Math.sin(el*.5+q.gl))
         : 0;
@@ -1158,6 +1178,877 @@ FX.unify(document.getElementById('platform'));
 // Calm reveals everywhere else (unify section excluded — sticky stage stays static)
 document.querySelectorAll('.section > .wrap').forEach(w=>w.classList.add('reveal'));
 FX.rescanReveal();
+</script>
+
+<!-- ══════════ FX MOTION KIT (local preview — not pushed) ══════════ -->
+<style id="fxmotion-css">
+/* Scroll reveals: rise + de-blur, staggered via --fxm-d. Only ever applied
+   by JS, so no-JS and reduced-motion users always see static content. */
+@media (prefers-reduced-motion: no-preference){
+  .fxm{opacity:0;transform:translateY(26px) scale(.985);filter:blur(7px);
+    transition:opacity .7s cubic-bezier(.23,1,.32,1),transform .7s cubic-bezier(.23,1,.32,1),
+      filter .7s cubic-bezier(.23,1,.32,1);
+    transition-delay:var(--fxm-d,0s);}
+  .fxm-in{opacity:1;transform:none;filter:none;}
+  /* Masked headline lines: each line slides up out of its own clip. */
+  .fxm-mask{opacity:1;transform:none;filter:none;}
+  .fxl{display:block;overflow:hidden;padding-block:.08em;margin-block:-.08em;}
+  .fxl>span{display:block;transform:translateY(118%);
+    transition:transform .9s cubic-bezier(.23,1,.32,1);transition-delay:var(--fxl-d,0s);}
+  .fxm-in .fxl>span{transform:none;}
+}
+/* Tilt + magnetic: transforms are set inline by JS; this is the release. */
+.fx-tilt{transition:transform .55s cubic-bezier(.22,1,.36,1),box-shadow .55s var(--ease);}
+.fx-tilt.fx-tilting{transition:transform .12s linear,box-shadow .3s var(--ease);}
+.fx-mag{transition:transform .5s cubic-bezier(.22,1,.36,1);}
+</style>
+<script>
+(function(){
+'use strict';
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var fine=matchMedia('(pointer: fine)').matches;
+console.info('[FX Motion] kit loaded · reduced-motion: '+reduce+' · fine pointer: '+fine);
+if(reduce) console.info('[FX Motion] OS "Reduce Motion" is ON — all motion intentionally disabled (System Settings > Accessibility > Display).');
+
+if(reduce) return;                       // everything below is motion
+
+/* Claim the headlines SYNCHRONOUSLY, before lumina's DOMContentLoaded
+   letter-splitter runs: data-split=1 is lumina's own opt-out. We save the
+   clean markup now and build line masks from it after fonts load. */
+document.querySelectorAll('h2.h-lg, h2.display').forEach(function(h){
+  if(!h.closest('#hero') && !h.dataset.split){
+    h.dataset.split='1';
+    h.dataset.fxorig=h.innerHTML;
+  }
+});
+
+/* ── 1 · Ticker ribbon under the hero ─────────────────────────────── */
+var heroT=document.getElementById('hero');
+if(heroT && !document.querySelector('.fx-ticker')){
+  var items=['<b>EURUSD</b><span class="up">▲</span>','Method over hype',
+    '<b>GBPJPY</b><span class="up">▲</span>','Risk first',
+    '<b>XAUUSD</b><span class="up">▲</span>','Journal everything',
+    '<b>US500</b><span class="up">▲</span>','Process over outcome',
+    '<b>BTCUSD</b><span class="up">▲</span>','Discipline compounds'];
+  var seq=items.map(function(t){return '<span class="fx-ti">'+t+'</span>';}).join('');
+  var tick=document.createElement('div');
+  tick.className='fx-ticker'; tick.setAttribute('aria-hidden','true');
+  tick.innerHTML='<div class="fx-ticker-track">'+seq+seq+'</div>';
+  heroT.parentNode.insertBefore(tick, heroT.nextSibling);
+}
+
+/* ── 2 · Scroll reveals with per-section stagger ──────────────────── */
+var PLX_SKIP=['wb-live-card','pt-duo','tk-bento'];
+var targets=[];
+document.querySelectorAll('section:not(#hero)').forEach(function(sec){
+  var els=sec.querySelectorAll(
+    '.eyebrow, h2, .body-lg, .wrap>.btn, .between .btn, '+
+    '#problems>*, #steps>*, #tiers>*, .tk-bento>*, #testi>*, '+
+    '.fx-stat, .wb-row, .wb-live-card>*, .pt-half, .pt-div, .u-head>*');
+  var i=0;
+  els.forEach(function(el){
+    if(el.closest('#hero')||el.classList.contains('fxm'))return;
+    if(PLX_SKIP.some(function(c){return el.classList.contains(c);}))return;
+    el.classList.add('fxm');
+    el.style.setProperty('--fxm-d',(Math.min(i*.07,.56)).toFixed(2)+'s');
+    targets.push(el); i++;
+  });
+});
+if('IntersectionObserver' in window){
+  var io=new IntersectionObserver(function(en){
+    en.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('fxm-in');io.unobserve(e.target);}
+    });
+  },{threshold:.12,rootMargin:'0px 0px -7% 0px'});
+  targets.forEach(function(el){io.observe(el);});
+}else targets.forEach(function(el){el.classList.add('fxm-in');});
+
+/* ── 3 · Masked line-by-line headline reveals ─────────────────────── */
+function splitLines(h){
+  if(h.dataset.fxsplit||h.closest('#hero'))return;
+  h.dataset.fxsplit='1';
+  var orig=h.dataset.fxorig||h.innerHTML;
+  var text=h.textContent.replace(/\s+/g,' ').trim();
+  h.setAttribute('aria-label',text);
+  var words=orig.split(/<br\s*\/?>/i).map(function(seg){
+    return seg.replace(/<[^>]+>/g,' ').split(/\s+/).filter(Boolean);
+  });
+  // lay words out to measure natural wrap points
+  h.innerHTML=words.map(function(seg){
+    return seg.map(function(w){return '<span data-w style="display:inline-block;">'+w+'</span>';}).join(' ');
+  }).join('<br>');
+  var lines=[],last=null;
+  h.querySelectorAll('[data-w]').forEach(function(sp){
+    var top=sp.offsetTop;
+    if(top!==last){lines.push([]);last=top;}
+    lines[lines.length-1].push(sp.textContent);
+  });
+  h.innerHTML=lines.map(function(L,i){
+    return '<span class="fxl" aria-hidden="true"><span style="--fxl-d:'+(i*.09).toFixed(2)+'s">'+L.join(' ')+'</span></span>';
+  }).join('');
+  h.classList.add('fxm-mask');
+}
+function buildMasks(){
+  if(innerWidth<10){                    // degenerate viewport: wait for one
+    addEventListener('resize',buildMasks,{once:true});
+    return;
+  }
+  document.querySelectorAll('h2[data-fxorig]').forEach(splitLines);
+}
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(buildMasks);
+/* Reflow safety: on resize, headlines not yet revealed re-split at the new
+   width; revealed ones return to plain static text (their show is over). */
+var fxrsT=null;
+addEventListener('resize',function(){
+  clearTimeout(fxrsT);
+  fxrsT=setTimeout(function(){
+    document.querySelectorAll('h2[data-fxsplit]').forEach(function(h){
+      if(!h.dataset.fxorig)return;
+      h.innerHTML=h.dataset.fxorig;
+      delete h.dataset.fxsplit;
+      if(h.classList.contains('fxm-in')){h.classList.remove('fxm-mask');h.removeAttribute('aria-label');}
+      else splitLines(h);
+    });
+  },220);
+});
+
+/* ── 4 · Scroll parallax on feature surfaces ──────────────────────── */
+if(fine){
+  var plx=[];
+  [['.wb-live-card',.07],['.pt-duo',.045],['.tk-bento',.03]].forEach(function(cfg){
+    var el=document.querySelector(cfg[0]);
+    if(el){el.style.willChange='transform';plx.push([el,cfg[1]]);}
+  });
+  var pTick=null;
+  function doPlx(){
+    pTick=null;
+    var vh=innerHeight;
+    plx.forEach(function(pr){
+      var r=pr[0].getBoundingClientRect();
+      var c=(r.top+r.height/2)-vh/2;
+      pr[0].style.transform='translate3d(0,'+(-c*pr[1]).toFixed(1)+'px,0)';
+    });
+  }
+  addEventListener('scroll',function(){if(!pTick)pTick=requestAnimationFrame(doPlx);},{passive:true});
+  doPlx();
+}
+
+/* ── 5 · Pointer tilt physics on cards ────────────────────────────── */
+if(fine){
+  document.querySelectorAll('#problems>*, #tiers>*, .tk-bento>*, #testi>*').forEach(function(card){
+    card.classList.add('fx-tilt');
+    card.addEventListener('pointerenter',function(){card.classList.add('fx-tilting');});
+    card.addEventListener('pointermove',function(ev){
+      var r=card.getBoundingClientRect();
+      var px=(ev.clientX-r.left)/r.width-.5, py=(ev.clientY-r.top)/r.height-.5;
+      card.style.transform='perspective(820px) rotateX('+(-py*4.2).toFixed(2)+'deg) rotateY('+(px*4.2).toFixed(2)+'deg) translateY(-4px)';
+    });
+    card.addEventListener('pointerleave',function(){
+      card.classList.remove('fx-tilting');
+      card.style.transform='';
+    });
+  });
+}
+
+/* ── 6 · Magnetic primary CTAs ────────────────────────────────────── */
+if(fine){
+  document.querySelectorAll('.btn-lime, .btn-forest').forEach(function(btn){
+    btn.classList.add('fx-mag');
+    btn.addEventListener('pointermove',function(ev){
+      var r=btn.getBoundingClientRect();
+      var dx=ev.clientX-(r.left+r.width/2), dy=ev.clientY-(r.top+r.height/2);
+      btn.style.transform='translate('+(dx*.18).toFixed(1)+'px,'+(dy*.28).toFixed(1)+'px)';
+    });
+    btn.addEventListener('pointerleave',function(){btn.style.transform='';});
+  });
+}
+})();
+</script>
+
+
+
+
+
+<!-- ══════════ FX CINEMA — Lenis + GSAP + Vanta (local preview) ══════════ -->
+<style id="fxcinema-css">
+html.lenis, html.lenis body{height:auto;}
+.lenis.lenis-smooth{scroll-behavior:auto!important;}
+#hero{overflow:hidden;}
+#fxVanta{position:absolute;inset:0;z-index:0;opacity:0;pointer-events:none;}
+.btn:active{transform:scale(.97)!important;transition:transform .1s ease-out!important;}
+.fx-heroatmo{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(125% 96% at 50% 32%, transparent 60%, rgba(4,8,6,.38) 100%);
+  animation:fxAtmo 9s ease-in-out infinite alternate;}
+.fx-heroatmo::after{content:'';position:absolute;inset:0;opacity:.055;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");}
+@keyframes fxAtmo{from{opacity:.85;}to{opacity:1;}}
+.hero-stage{position:relative;z-index:2;}
+</style>
+<script>
+window.addEventListener('load',function(){
+'use strict';
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var big=matchMedia('(min-width: 980px)').matches;
+if(reduce||!window.gsap||!window.Lenis){console.info('[FX Cinema] skipped',{reduce:reduce,gsap:!!window.gsap,lenis:!!window.Lenis});return;}
+gsap.registerPlugin(ScrollTrigger);
+
+/* ── Lenis inertia scroll, driven by GSAP's ticker (official recipe) ── */
+var lenis=window.__lenis=new Lenis({lerp:.1,wheelMultiplier:1});
+lenis.on('scroll',ScrollTrigger.update);
+gsap.ticker.add(function(t){lenis.raf(t*1000);});
+gsap.ticker.lagSmoothing(0);
+
+if(big){
+  /* ── Hero cinematic exit: content sinks + softens as you leave ── */
+  var stage=document.querySelector('.hero-stage');
+  if(stage){
+    gsap.to(stage,{yPercent:14,scale:.965,rotationX:7,autoAlpha:.25,ease:'none',
+      transformOrigin:'center 18%',
+      scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom 25%',scrub:true}});
+    gsap.to(stage,{y:7,duration:3.4,ease:'sine.inOut',yoyo:true,repeat:-1});
+  }
+  /* ── Typography drift: big headlines float against scroll ── */
+  document.querySelectorAll('section:not(#hero) h2.h-lg, section:not(#hero) h2.display').forEach(function(h){
+    gsap.fromTo(h,{yPercent:5},{yPercent:-5,ease:'none',
+      scrollTrigger:{trigger:h,start:'top 95%',end:'bottom 5%',scrub:true}});
+  });
+  /* ── Bento tiles: staggered scrub drift (each column its own speed) ── */
+  document.querySelectorAll('.tk-bento>*').forEach(function(tile,i){
+    gsap.fromTo(tile,{y:34+(i%3)*18},{y:-(10+(i%3)*10),ease:'none',
+      scrollTrigger:{trigger:'#toolkit',start:'top 90%',end:'bottom 10%',scrub:true}});
+  });
+  /* ── Testimonials + stats: entrance pops (once) ── */
+  gsap.from('#testi>*',{y:44,autoAlpha:0,duration:.9,ease:'power3.out',stagger:.12,
+    scrollTrigger:{trigger:'#testi',start:'top 82%'}});
+  gsap.from('.fx-stat',{scale:.82,autoAlpha:0,duration:.7,ease:'back.out(1.6)',stagger:.09,
+    scrollTrigger:{trigger:'#ctaStats',start:'top 85%'}});
+
+  /* ── Vanta 3D layer: joins only AFTER the approved formation lands ── */
+  var hero=document.getElementById('hero');
+  var heroStage=document.getElementById('heroStage');
+  function bootVanta(){
+    if(document.getElementById('fxVanta'))return;
+    var lay=document.createElement('div');lay.id='fxVanta';
+    hero.insertBefore(lay,hero.firstChild);
+    function inject(src){return new Promise(function(res,rej){
+      var sc=document.createElement('script');sc.src=src;sc.onload=res;sc.onerror=rej;
+      document.head.appendChild(sc);});}
+    inject('../assets/vendor/three.min.js')
+      .then(function(){return inject('../assets/vendor/vanta.halo.min.js');})
+      .then(function(){
+        window.__fxVanta=VANTA.HALO({el:lay,mouseControls:true,touchControls:false,
+          gyroControls:false,size:1.45,amplitudeFactor:1.35,
+          xOffset:0,yOffset:.12,
+          baseColor:0x3d5c14,backgroundColor:0x0c1210,backgroundAlpha:0});
+        gsap.to(lay,{opacity:.55,duration:2.6,ease:'power2.out'});
+        gsap.fromTo(lay,{yPercent:0,scale:1,opacity:.55},
+          {yPercent:16,scale:1.18,opacity:0,ease:'none',immediateRender:false,
+          scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom 30%',scrub:true}});
+        console.info('[FX Cinema] Vanta halo live');
+      }).catch(function(e){console.warn('[FX Cinema] Vanta failed',e);});
+    /* atmosphere: breathing vignette + fine grain over the sky */
+    var atmo=document.createElement('div'); atmo.className='fx-heroatmo';
+    hero.appendChild(atmo);   // z-index layers it; DOM position irrelevant
+    /* depth tilt: the whole hero plane leans toward the cursor */
+    hero.style.perspective='1200px';
+    var stagePl=document.querySelector('.hero-stage');
+    if(stagePl){
+      stagePl.style.transformStyle='preserve-3d';
+      var qx=gsap.quickTo(stagePl,'rotationY',{duration:.9,ease:'power3.out'});
+      var qy=gsap.quickTo(stagePl,'rotationX',{duration:.9,ease:'power3.out'});
+      var qlx=gsap.quickTo(lay,'x',{duration:1.2,ease:'power3.out'});
+      var qly=gsap.quickTo(lay,'y',{duration:1.2,ease:'power3.out'});
+      hero.addEventListener('pointermove',function(ev){
+        var nx=ev.clientX/innerWidth-.5, ny=ev.clientY/innerHeight-.5;
+        qx(nx*3.2); qy(-ny*2.6);
+        qlx(nx*-26); qly(ny*-18);
+      });
+      hero.addEventListener('pointerleave',function(){qx(0);qy(0);qlx(0);qly(0);});
+      /* per-element Z planes: real parallax INSIDE the tilting plane.
+         Applied 2.6s after the reveal so the staged rise finishes first. */
+      var applyZ=function(){
+        [['.hero-h1',55],['.hero-sub',36],['.hero-ask',85],
+         ['.hero-links',28],['.hero-disc',10]].forEach(function(zz){
+          var el=stagePl.querySelector(zz[0]);
+          if(el){el.style.transition='none';el.style.transform='translateZ('+zz[1]+'px)';}
+        });
+      };
+      var hs=document.getElementById('heroStage');
+      if(hs&&hs.classList.contains('hero-revealed')) setTimeout(applyZ,2600);
+      else if(hs) new MutationObserver(function(m,o){
+        if(hs.classList.contains('hero-revealed')){o.disconnect();setTimeout(applyZ,2600);}
+      }).observe(hs,{attributes:true,attributeFilter:['class']});
+    }
+  }
+  if(heroStage){
+    if(heroStage.classList.contains('hero-revealed')) setTimeout(bootVanta,600);
+    else new MutationObserver(function(m,o){
+      if(heroStage.classList.contains('hero-revealed')){o.disconnect();setTimeout(bootVanta,900);}
+    }).observe(heroStage,{attributes:true,attributeFilter:['class']});
+  }
+}
+console.info('[FX Cinema] Lenis + GSAP active · big='+big);
+});
+</script>
+
+
+<!-- ══════════ FX ART SCENES — orbit curriculum + glass membership (local) ══════════ -->
+<style id="fxart-css">
+@media (min-width: 980px) and (prefers-reduced-motion: no-preference){
+  /* ── Scene A · curriculum orbit path ── */
+  .fxr-on #tiers{display:none;}
+  .fxr-scene{position:relative;height:420px;margin-top:8px;}
+  .fxr-scene svg{width:100%;height:100%;overflow:visible;}
+  .fxr-track{fill:none;stroke:rgba(15,50,24,.14);stroke-width:2;}
+  .fxr-draw{fill:none;stroke:var(--lime,#c3f35c);stroke-width:3;stroke-linecap:round;
+    filter:drop-shadow(0 2px 8px rgba(195,243,92,.5));}
+  .fxr-node circle.c{fill:#fff;stroke:rgba(15,50,24,.25);stroke-width:2;transition:.45s var(--ease);}
+  .fxr-node.on circle.c{fill:var(--lime,#c3f35c);stroke:rgba(15,50,24,.55);}
+  .fxr-node circle.ring{fill:none;stroke:rgba(195,243,92,0);stroke-width:2;transition:.45s;}
+  .fxr-node.on circle.ring{stroke:rgba(195,243,92,.55);}
+  .fxr-node text{font-family:var(--font-display);font-weight:700;}
+  .fxr-node .nm{font-size:17px;fill:#191c1a;}
+  .fxr-node .ds{font-size:12px;font-family:Manrope;font-weight:600;fill:rgba(25,28,26,.55);}
+  .fxr-node .ti{font-size:11px;letter-spacing:.14em;fill:rgba(25,28,26,.45);}
+  .fxr-node{opacity:.35;transition:opacity .45s var(--ease);}
+  .fxr-node.on{opacity:1;}
+  .fxr-node .cnt{font-family:var(--font-display);font-weight:800;font-size:12px;
+    fill:#5a7d1e;letter-spacing:.06em;}
+  .fxr-comet{fill:var(--lime,#c3f35c);filter:drop-shadow(0 0 9px rgba(163,220,60,.9));
+    animation:fxrCp 1.7s ease-in-out infinite;}
+  @keyframes fxrCp{0%,100%{opacity:1;}50%{opacity:.55;}}
+  .fxr-t3d{transform-style:preserve-3d;will-change:transform;position:relative;z-index:1;}
+  .fxr-orb{position:absolute;left:38%;top:8%;width:460px;height:460px;border-radius:99em;
+    pointer-events:none;filter:blur(70px);opacity:.5;
+    background:radial-gradient(circle,rgba(195,243,92,.32),rgba(143,217,122,.1) 55%,transparent 70%);
+    animation:fxrOrb 11s ease-in-out infinite alternate;}
+  @keyframes fxrOrb{from{transform:translate(0,0) scale(1);}to{transform:translate(60px,26px) scale(1.12);}}
+  .fxr-dust{position:absolute;inset:0;pointer-events:none;}
+  .fxr-scene svg{position:relative;z-index:1;will-change:transform;}
+  .fxr-pop{position:absolute;z-index:3;pointer-events:none;opacity:0;
+    transform-origin:50% 100%;
+    transform:translate(-50%,-124%) scale(.96);
+    transition:opacity .2s cubic-bezier(.23,1,.32,1),transform .24s cubic-bezier(.23,1,.32,1);
+    background:rgba(255,255,255,.75);-webkit-backdrop-filter:blur(18px) saturate(1.3);
+    backdrop-filter:blur(18px) saturate(1.3);border:1px solid rgba(15,50,24,.14);
+    border-radius:16px;padding:14px 18px;box-shadow:0 18px 50px rgba(15,50,24,.18);
+    display:flex;flex-direction:column;gap:4px;min-width:230px;}
+  .fxr-pop.show{opacity:1;transform:translate(-50%,-118%) scale(1);}
+  .fxr-pop b{font-family:var(--font-display);font-size:14.5px;color:#191c1a;}
+  .fxr-pop span{font-family:Manrope;font-size:12.5px;font-weight:600;color:rgba(25,28,26,.65);}
+  .fxr-pop i{font-style:normal;font-family:Manrope;font-size:11.5px;font-weight:700;color:#5a7d1e;}
+  /* ── Scene B · glass membership card over aurora ── */
+  .fxg-scene{position:relative;height:470px;margin:34px auto 10px;max-width:860px;
+    perspective:1300px;}
+  .fxg-blob{position:absolute;left:50%;top:50%;width:680px;height:520px;
+    transform:translate(-50%,-50%);filter:blur(46px) saturate(1.3);opacity:.9;}
+  .fxg-tilt{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    transform-style:preserve-3d;will-change:transform;}
+  .fxg-card{position:relative;width:540px;height:336px;border-radius:28px;
+    background:linear-gradient(118deg,rgba(255,255,255,.66),rgba(255,255,255,.16) 46%,rgba(255,255,255,.4) 82%);
+    -webkit-backdrop-filter:blur(34px) saturate(1.45) brightness(1.03);
+    backdrop-filter:blur(34px) saturate(1.45) brightness(1.03);
+    border:1px solid rgba(255,255,255,.85);
+    box-shadow:0 44px 110px rgba(15,50,24,.32), 0 10px 34px rgba(15,50,24,.16),
+      0 0 0 1px rgba(195,243,92,.12), inset 0 1.5px 0 rgba(255,255,255,.95),
+      inset 0 -18px 40px rgba(195,243,92,.07);
+    padding:30px 36px;display:flex;flex-direction:column;transform-style:preserve-3d;text-align:center;}
+  .fxg-card::before{content:'';position:absolute;inset:0;border-radius:28px;opacity:.05;
+    background:repeating-radial-gradient(circle at 118% -30%,transparent 0 5px,#14201a 5px 5.7px),
+               repeating-radial-gradient(circle at -22% 130%,transparent 0 7px,#14201a 7px 7.6px);
+    pointer-events:none;}
+  .fxg-card::after{content:'';position:absolute;inset:10px;border-radius:20px;
+    border:1px solid rgba(20,32,26,.1);pointer-events:none;}
+  .fxg-iri{position:absolute;inset:0;border-radius:28px;pointer-events:none;opacity:.5;
+    background:conic-gradient(from calc(var(--gx,30%) * 3.6deg) at var(--gx,30%) var(--gy,25%),
+      rgba(195,243,92,.16),rgba(238,247,228,.05),rgba(143,217,122,.14),
+      rgba(255,255,255,.06),rgba(195,243,92,.16));
+    mix-blend-mode:overlay;transition:opacity .4s;}
+  .fxg-mark{transform:translateZ(38px);filter:drop-shadow(0 3px 10px rgba(20,32,26,.2));}
+  .fxg-spin{animation:fxgSpin 16s linear infinite;transform-origin:28px 28px;}
+  @keyframes fxgSpin{to{transform:rotate(360deg);}}
+  .fxg-num{margin-top:auto;font-family:var(--font-mono,ui-monospace);font-weight:600;
+    font-size:25px;letter-spacing:.2em;color:#1c2b22;transform:translateZ(30px);
+    text-shadow:0 1.5px 0 rgba(255,255,255,.85), 0 -1px 0 rgba(20,32,26,.22);}
+  .fxg-row1{display:flex;justify-content:space-between;align-items:center;transform:translateZ(34px);}
+  .fxg-brand{font-family:var(--font-display);font-weight:800;letter-spacing:.24em;
+    font-size:14px;color:#14201a;text-shadow:0 1px 0 rgba(255,255,255,.7);}
+  .fxg-tier{font-family:var(--font-display);font-weight:800;font-size:13px;letter-spacing:.2em;
+    background:var(--lime,#c3f35c);color:#14201a;padding:7px 16px;border-radius:99px;}
+  .fxg-live{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);
+    font-weight:800;font-size:12px;letter-spacing:.16em;color:#14201a;
+    background:var(--lime,#c3f35c);padding:7px 15px;border-radius:99px;}
+  .fxg-live i{width:7px;height:7px;border-radius:99px;background:#14201a;
+    animation:fxgPulse 1.6s ease-in-out infinite;}
+  @keyframes fxgPulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+  .fxg-term{flex:1;margin:16px 0 14px;position:relative;border-radius:14px;
+    background:rgba(255,255,255,.22);border:1px solid rgba(20,32,26,.1);
+    overflow:hidden;transform:translateZ(34px);}
+  .fxg-term canvas{position:absolute;inset:0;width:100%;height:100%;}
+  .fxg-stats{display:flex;gap:9px;flex-wrap:wrap;transform:translateZ(24px);}
+  .fxg-chip2{font-family:Manrope;font-weight:700;font-size:12.5px;color:#1c2b22;
+    background:rgba(20,32,26,.07);border:1px solid rgba(20,32,26,.13);
+    padding:7px 14px;border-radius:99px;}
+  .fxg-chip2.up{background:rgba(195,243,92,.5);border-color:rgba(20,32,26,.2);}
+  .fxg-row2{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px;
+    transform:translateZ(20px);}
+  .fxg-row2>svg{position:absolute;right:30px;bottom:28px;}
+  .fxg-est{position:absolute;left:30px;bottom:28px;font-family:var(--font-display);
+    font-weight:800;font-size:10px;letter-spacing:.18em;color:rgba(20,32,26,.5);
+    text-shadow:0 1px 0 rgba(255,255,255,.6);}
+  .fxg-name{font-family:var(--font-display);font-weight:800;font-size:14px;
+    letter-spacing:.14em;color:rgba(20,32,26,.82);
+    text-shadow:0 1px 0 rgba(255,255,255,.7);}
+  .fxg-sub{font-family:var(--font-display);font-size:10px;font-weight:800;
+    text-transform:uppercase;letter-spacing:.17em;color:rgba(20,32,26,.55);
+    margin-top:6px;text-shadow:0 1px 0 rgba(255,255,255,.65);}
+  .fxg-glare{position:absolute;inset:0;border-radius:26px;pointer-events:none;
+    background:radial-gradient(380px circle at var(--gx,30%) var(--gy,20%),rgba(255,255,255,.5),transparent 55%);
+    mix-blend-mode:screen;}
+  .fxg-chip{width:52px;height:40px;border-radius:9px;transform:translateZ(32px);margin:22px auto 0;
+    background:linear-gradient(140deg,#eef7d8,#c9dfa0 55%,#a9c67e);
+    border:1px solid rgba(20,32,26,.3);position:relative;overflow:hidden;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.85), 0 2px 7px rgba(20,32,26,.16);}
+  .fxg-chip i{position:absolute;inset:7px 8px;border:1px solid rgba(20,32,26,.32);border-radius:5px;display:block;}
+  .fxg-chip i::before,.fxg-chip i::after{content:'';position:absolute;left:-8px;right:-8px;
+    height:1px;background:rgba(20,32,26,.28);}
+  .fxg-chip i::before{top:33%;} .fxg-chip i::after{top:66%;}
+}
+</style>
+<script>
+window.addEventListener('load',function(){
+'use strict';
+var big=matchMedia('(min-width: 980px)').matches;
+var noRM=matchMedia('(prefers-reduced-motion: no-preference)').matches;
+if(!big||!noRM||!window.gsap)return;
+
+/* ══ Scene B · glass membership card over the aurora ══ */
+(function(){
+  var duo=document.getElementById('ptDuo'); if(!duo)return;
+  var scene=document.createElement('div'); scene.className='fxg-scene';
+  scene.innerHTML='<canvas class="fxg-blob" width="680" height="520"></canvas>'+
+   '<div class="fxg-tilt"><div class="fxg-card">'+
+   '<div class="fxg-row1"><span class="fxg-brand">THE TRADING LAB</span>'+
+   '<svg class="fxg-mark" width="58" height="58" viewBox="0 0 56 56" aria-hidden="true">'+
+   '<circle cx="28" cy="28" r="26.5" fill="rgba(195,243,92,.28)" stroke="rgba(20,32,26,.4)" stroke-width="1"/>'+
+   '<circle class="fxg-spin" cx="28" cy="28" r="22" fill="none" stroke="rgba(20,32,26,.5)" stroke-width="1" stroke-dasharray="2.2 3.6"/>'+
+   '<path d="M15 35 L23.5 26.5 L28.5 30.5 L38 20" fill="none" stroke="#14201a" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>'+
+   '<path d="M38.8 19.2 l-6 .8 4.3 4.6 z" fill="#14201a"/>'+
+   '<circle cx="15" cy="35" r="2.4" fill="#14201a"/></svg></div>'+
+   '<div class="fxg-chip"><i></i></div>'+
+   '<div class="fxg-num">0130&nbsp;&nbsp;0052&nbsp;&nbsp;2026&nbsp;&nbsp;····</div>'+
+   '<div class="fxg-row2"><span><span class="fxg-name">PRO MEMBER</span>'+
+   '<div class="fxg-sub">Full curriculum · AI tutor · journal · analytics</div></span>'+
+   '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14201a" stroke-width="1.7" opacity=".55"><path d="M6 8.5a8 8 0 0 1 0 7M9.5 6a12 12 0 0 1 0 12M13 3.5a16 16 0 0 1 0 17"/></svg>'+
+   '</div><span class="fxg-est">EST · 2026</span>'+
+   '<div class="fxg-iri"></div><div class="fxg-glare"></div></div></div>';
+  duo.parentNode.insertBefore(scene,duo);
+  /* aurora blob painter */
+  var cv=scene.querySelector('.fxg-blob'), cx=cv.getContext('2d');
+  var ORBS=[[195,243,92,.95,150],[143,217,122,.85,180],[238,247,228,.8,120],
+            [15,50,24,.9,170],[233,245,192,.8,110]];
+  var tv=scene.querySelector('#fxgTerm'), tc=tv?tv.getContext('2d'):null;
+  function candles(t){
+    var W2=470,H2=170;
+    tc.clearRect(0,0,W2,H2);
+    var N=12, cyc=(t*1.6)%(N+5), eq=[];
+    for(var i=0;i<N;i++){
+      var ap=Math.min(1,Math.max(0,cyc-i));
+      if(ap<=0)break;
+      var sr=Math.sin(i*3.7+1.3), sr2=Math.sin(i*1.9+7.1);
+      var base=H2*.55 - i*3.4 - sr*16;
+      var bull=sr2>-.35;
+      var bh=14+Math.abs(sr)*22;
+      var x=18+i*38;
+      tc.globalAlpha=ap;
+      tc.strokeStyle=bull?'rgba(80,130,50,.85)':'rgba(20,32,26,.45)';
+      tc.beginPath();tc.moveTo(x+7,base-bh/2-9);tc.lineTo(x+7,base+bh/2+9);tc.stroke();
+      tc.fillStyle=bull?'rgba(151,204,74,.95)':'rgba(20,32,26,.35)';
+      tc.fillRect(x,base-bh/2,14,bh);
+      eq.push([x+7,base-bh/2-14]);
+      tc.globalAlpha=1;
+    }
+    if(eq.length>1){
+      tc.strokeStyle='rgba(90,150,40,.9)';tc.lineWidth=2.5;tc.beginPath();
+      eq.forEach(function(pt2,i2){i2?tc.lineTo(pt2[0],pt2[1]):tc.moveTo(pt2[0],pt2[1]);});
+      tc.stroke();tc.lineWidth=1;
+      var hd=eq[eq.length-1];
+      tc.fillStyle='rgba(90,150,40,1)';tc.beginPath();tc.arc(hd[0],hd[1],4,0,6.283);tc.fill();
+    }
+  }
+  var run=false, t0=0;
+  function paint(now){
+    if(!run)return;
+    var t=now/1000;
+    if(tc)candles(t);
+    cx.clearRect(0,0,680,520);
+    cx.globalCompositeOperation='lighter';
+    ORBS.forEach(function(o,i){
+      var a=t*.22+i*1.9, r=o[4];
+      var x=340+Math.cos(a+Math.sin(t*.14+i))*150;
+      var y=260+Math.sin(a*.8+i)*115;
+      var g=cx.createRadialGradient(x,y,0,x,y,r);
+      g.addColorStop(0,'rgba('+o[0]+','+o[1]+','+o[2]+','+o[3]+')');
+      g.addColorStop(1,'rgba('+o[0]+','+o[1]+','+o[2]+',0)');
+      cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,r,0,6.283); cx.fill();
+    });
+    requestAnimationFrame(paint);
+  }
+  new IntersectionObserver(function(en){
+    run=en[0].isIntersecting;
+    if(run)requestAnimationFrame(paint);
+  },{rootMargin:'120px'}).observe(scene);
+  /* 3D tilt + glare */
+  var tilt=scene.querySelector('.fxg-tilt'), glare=scene.querySelector('.fxg-glare');
+  var qx=gsap.quickTo(tilt,'rotationY',{duration:.7,ease:'power3.out'});
+  var qy=gsap.quickTo(tilt,'rotationX',{duration:.7,ease:'power3.out'});
+  scene.addEventListener('pointermove',function(ev){
+    var r=scene.getBoundingClientRect();
+    var nx=(ev.clientX-r.left)/r.width-.5, ny=(ev.clientY-r.top)/r.height-.5;
+    qx(nx*14); qy(-ny*11);
+    glare.style.setProperty('--gx',(nx*100+50)+'%');
+    glare.style.setProperty('--gy',(ny*100+50)+'%');
+  });
+  scene.addEventListener('pointerleave',function(){qx(0);qy(0);});
+  /* entrance */
+  gsap.from(tilt,{y:90,rotationX:22,autoAlpha:0,duration:1.2,ease:'power3.out',
+    scrollTrigger:{trigger:scene,start:'top 74%'}});
+  gsap.fromTo(scene.querySelector('.fxg-blob'),{scale:.7,opacity:0},
+    {scale:1,opacity:.9,duration:1.6,ease:'power2.out',immediateRender:false,
+    scrollTrigger:{trigger:scene,start:'top 78%'}});
+  console.info('[FX Art] glass membership live');
+})();
+});
+</script>
+
+<!-- ══════════ FX JOURNEY — horizontal scroll chapter (local preview) ══════════ -->
+<style id="fxh-css">
+@media (min-width: 980px) and (prefers-reduced-motion: no-preference){
+  .fxh-on #steps{display:none;}
+  .fxh-on{background:var(--c-deep,#0c1210)!important;padding:0!important;overflow:hidden;}
+  .fxh-on .eyebrow{color:var(--lime,#c3f35c);}
+  .fxh-on h2{color:var(--d-ink,#eef3ec);}
+  .fxh-on .btn-ghost{background:transparent!important;color:var(--d-ink,#eef3ec)!important;
+    border:1px solid rgba(238,243,236,.35)!important;box-shadow:none!important;}
+  .fxh-head{padding:96px 8vw 0;}
+  .fxh-view{height:78vh;display:flex;align-items:center;position:relative;}
+  .fxh-bgnum{position:absolute;top:50%;left:0;transform:translateY(-50%);
+    font-family:var(--font-display);font-weight:800;font-size:44vh;line-height:1;
+    color:transparent;-webkit-text-stroke:1.5px rgba(195,243,92,.07);
+    white-space:nowrap;pointer-events:none;}
+  .fxh-track{display:flex;gap:3.4vw;padding:0 8vw;will-change:transform;}
+  .fxh-panel{flex:none;width:42vw;height:58vh;border-radius:26px;position:relative;
+    background:linear-gradient(155deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+    border:1px solid rgba(195,243,92,.16);padding:40px 44px;overflow:hidden;
+    display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.4);}
+  .fxh-k{font-family:var(--font-display);font-weight:800;font-size:11px;
+    letter-spacing:.22em;color:var(--lime,#c3f35c);margin-bottom:16px;opacity:.85;}
+  .fxh-n{font-family:var(--font-display);font-weight:800;font-size:52px;line-height:1;
+    color:transparent;-webkit-text-stroke:1.3px rgba(195,243,92,.6);}
+  .fxh-t{font-family:var(--font-display);font-weight:700;font-size:26px;line-height:1.15;
+    color:var(--d-ink,#eef3ec);margin:14px 0 10px;}
+  .fxh-d{font-size:15px;line-height:1.55;color:var(--d-ink-var,#9fb0a6);margin:0;max-width:30vw;}
+  .fxh-viz{margin-top:auto;height:20vh;position:relative;}
+  .fxh-bar{position:absolute;bottom:0;width:16%;border-radius:8px 8px 4px 4px;
+    background:rgba(195,243,92,.25);border:1px solid rgba(195,243,92,.4);
+    animation:fxhBar 3.2s ease-in-out infinite;}
+  @keyframes fxhBar{0%,100%{transform:scaleY(.55);}50%{transform:scaleY(1);}}
+  .fxh-wave{stroke:var(--lime,#c3f35c);stroke-width:2.5;fill:none;stroke-linecap:round;
+    stroke-dasharray:640;animation:fxhDash 3.6s linear infinite;}
+  @keyframes fxhDash{from{stroke-dashoffset:1280;}to{stroke-dashoffset:0;}}
+  .fxh-bub{border-radius:12px;padding:10px 14px;font-size:12.5px;font-weight:600;
+    color:var(--d-ink,#eef3ec);margin-bottom:8px;max-width:82%;
+    background:rgba(255,255,255,.07);animation:fxhPop 4.8s ease-in-out infinite;}
+  .fxh-bub.me{background:rgba(195,243,92,.16);margin-left:auto;animation-delay:.9s;}
+  @keyframes fxhPop{0%,12%{opacity:0;transform:translateY(10px);}
+    22%,88%{opacity:1;transform:none;}97%,100%{opacity:0;}}
+  .fxh-row{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;
+    color:var(--d-ink,#eef3ec);background:rgba(255,255,255,.06);border-radius:9px;
+    padding:9px 13px;margin-bottom:7px;animation:fxhPop 5.6s ease-in-out infinite;}
+  .fxh-row b{color:var(--lime,#c3f35c);}
+  .fxh-row.dn b{color:#ff9a9a;}
+  .fxh-ring{animation:fxhSpin 7s linear infinite;transform-origin:center;}
+  @keyframes fxhSpin{to{transform:rotate(360deg);}}
+  .fxh-prog{height:2px;background:rgba(195,243,92,.14);margin:0 8vw 70px;position:relative;}
+  .fxh-prog i{position:absolute;inset:0;background:var(--lime,#c3f35c);transform-origin:left;
+    transform:scaleX(0);box-shadow:0 0 12px rgba(195,243,92,.7);}
+  .fxh-ct{font-family:var(--font-display);font-weight:800;font-size:13px;letter-spacing:.2em;
+    color:var(--lime,#c3f35c);padding:0 8vw 14px;}
+}
+</style>
+<script>
+window.addEventListener('load',function(){
+'use strict';
+if(!matchMedia('(min-width: 980px)').matches)return;
+if(!matchMedia('(prefers-reduced-motion: no-preference)').matches)return;
+if(!window.gsap)return;
+var sec=document.getElementById('method'); if(!sec)return;
+var wrap=sec.querySelector('.wrap'); if(!wrap)return;
+sec.classList.add('fxh-on');
+var eye=wrap.querySelector('.eyebrow'), h2=wrap.querySelector('h2');
+var head=document.createElement('div'); head.className='fxh-head';
+if(eye)head.appendChild(eye); if(h2)head.appendChild(h2);
+var VIZ=[
+ '<div class="fxh-bar" style="left:4%;height:34%;animation-delay:0s"></div><div class="fxh-bar" style="left:24%;height:52%;animation-delay:.3s"></div><div class="fxh-bar" style="left:44%;height:68%;animation-delay:.6s"></div><div class="fxh-bar" style="left:64%;height:84%;animation-delay:.9s"></div><div class="fxh-bar" style="left:84%;height:100%;animation-delay:1.2s;background:rgba(195,243,92,.5)"></div>',
+ '<svg width="100%" height="100%" viewBox="0 0 640 140" preserveAspectRatio="none"><path class="fxh-wave" d="M0 70 Q 40 20 80 70 T 160 70 T 240 70 T 320 70 T 400 70 T 480 70 T 560 70 T 640 70"/></svg>',
+ '<div class="fxh-bub me">What invalidates this setup?</div><div class="fxh-bub">Loss of the 4H higher-low — want a quiz on it?</div>',
+ '<div class="fxh-row" style="animation-delay:0s"><span>EURUSD · Long</span><b>+1.8R</b></div><div class="fxh-row dn" style="animation-delay:.7s"><span>GBPJPY · Short</span><b>-0.6R</b></div><div class="fxh-row" style="animation-delay:1.4s"><span>XAUUSD · Long</span><b>+2.4R</b></div>',
+ '<svg width="100%" height="100%" viewBox="0 0 640 140" preserveAspectRatio="none"><path class="fxh-wave" style="animation-duration:4.4s" d="M0 120 L80 104 L160 112 L240 84 L320 92 L400 58 L480 66 L560 30 L640 12"/></svg>',
+ '<svg width="100%" height="100%" viewBox="0 0 200 160"><g class="fxh-ring" style="transform-origin:100px 80px;"><circle cx="100" cy="80" r="56" fill="none" stroke="rgba(195,243,92,.22)" stroke-width="2"/><path d="M100 24 A56 56 0 1 1 44 80" fill="none" stroke="rgba(195,243,92,.9)" stroke-width="3" stroke-linecap="round"/><path d="M44 80l-7-13 13 2z" fill="#c3f35c"/><circle cx="100" cy="24" r="4.5" fill="#c3f35c"/><circle cx="156" cy="80" r="4" fill="rgba(238,243,236,.8)"/><circle cx="100" cy="136" r="4" fill="rgba(238,243,236,.8)"/><circle cx="44" cy="80" r="4" fill="rgba(238,243,236,.8)"/></g><text x="100" y="86" text-anchor="middle" fill="#eef3ec" font-size="15" font-weight="800" font-family="Hanken Grotesk, sans-serif">the loop</text></svg>'
+];
+var STEPS=[
+ ['Learn through tiered courses','Entry to Advanced, plus Psychology — each tier unlocks the next.'],
+ ['Attend weekly live sessions','Technical, fundamental and mindset webinars — recorded and replayable.'],
+ ['Ask AI agents questions','Course-aware answers, scoped to your exact lesson. Never hype.'],
+ ['Log every trade','A structured journal turns activity into reviewable, honest data.'],
+ ['Review your performance','Analytics surface your edges, leaks and patterns as they form.'],
+ ['Improve through feedback','Insights become rules. Rules become discipline. It compounds.']];
+var view=document.createElement('div'); view.className='fxh-view';
+var bg=document.createElement('div'); bg.className='fxh-bgnum';
+bg.textContent='01 · 02 · 03 · 04 · 05 · 06';
+var track=document.createElement('div'); track.className='fxh-track';
+STEPS.forEach(function(st,i){
+  var pn=document.createElement('div'); pn.className='fxh-panel';
+  var KICK=['THE FOUNDATION','THE RHYTHM','THE GUIDE','THE DISCIPLINE','THE TRUTH','THE COMPOUNDING'];
+  pn.innerHTML='<div class="fxh-k">CHAPTER 0'+(i+1)+' — '+KICK[i]+'</div>'+
+    '<div class="fxh-n">0'+(i+1)+'</div><h3 class="fxh-t">'+st[0]+
+    '</h3><p class="fxh-d">'+st[1]+'</p><div class="fxh-viz">'+VIZ[i]+'</div>';
+  track.appendChild(pn);
+});
+view.appendChild(bg); view.appendChild(track);
+var ct=document.createElement('div'); ct.className='fxh-ct'; ct.textContent='01 / 06';
+var prog=document.createElement('div'); prog.className='fxh-prog'; prog.innerHTML='<i></i>';
+sec.insertBefore(head,wrap); sec.insertBefore(view,wrap);
+sec.insertBefore(ct,wrap); sec.insertBefore(prog,wrap);
+wrap.style.display='none';
+var bar=prog.querySelector('i');
+var dist=function(){return track.scrollWidth-innerWidth+innerWidth*.16;};
+gsap.to(track,{x:function(){return -dist();},ease:'none',
+  scrollTrigger:{trigger:sec,start:'top top',end:function(){return '+='+dist();},
+    pin:true,scrub:true,invalidateOnRefresh:true,
+    onUpdate:function(st2){
+      bar.style.transform='scaleX('+st2.progress+')';
+      ct.textContent='0'+(Math.min(5,Math.floor(st2.progress*6))+1)+' / 06';
+    }}});
+gsap.fromTo(bg,{x:function(){return innerWidth*.06;}},{x:function(){return -dist();},ease:'none',
+  scrollTrigger:{trigger:sec,start:'top top',end:function(){return '+='+dist();},scrub:true,invalidateOnRefresh:true}});
+/* the track leans with scroll velocity — alive in the hand */
+if(window.__lenis){
+  var skew=gsap.quickTo(track,'skewX',{duration:.5,ease:'power3.out'});
+  window.__lenis.on('scroll',function(e){
+    skew(Math.max(-4,Math.min(4,(e.velocity||0)*.10)));
+  });
+}
+console.info('[FX Journey] horizontal chapter live');
+});
+</script>
+
+<!-- ══════════ FX PLAYBOOK — 3D book curriculum (local preview) ══════════ -->
+<style id="fxb-css">
+@media (min-width: 980px) and (prefers-reduced-motion: no-preference){
+  .fxb-on #tiers{display:none;}
+  .fxb-on{background:var(--c-deep,#0c1210)!important;}
+  .fxb-on .eyebrow{color:var(--lime,#c3f35c);}
+  .fxb-on h2{color:var(--d-ink,#eef3ec);}
+  .fxb-on .btn-ghost{background:transparent!important;color:var(--d-ink,#eef3ec)!important;
+    border:1px solid rgba(238,243,236,.35)!important;box-shadow:none!important;}
+  .fxb-on .btn-ghost:hover{background:rgba(238,243,236,.08)!important;}
+  .fxb-stage{height:74vh;display:flex;align-items:center;justify-content:center;
+    perspective:1600px;position:relative;}
+  .fxb-glow{position:absolute;width:560px;height:420px;border-radius:99em;
+    background:radial-gradient(circle,rgba(195,243,92,.13),transparent 65%);
+    filter:blur(50px);pointer-events:none;}
+  .fxb-book{position:relative;width:390px;height:500px;transform-style:preserve-3d;
+    transform:rotateX(8deg);}
+  .fxb-base{position:absolute;inset:0;border-radius:6px 14px 14px 6px;
+    background:linear-gradient(160deg,#182b1e,#0e1a13);
+    border:1px solid rgba(195,243,92,.2);
+    box-shadow:0 60px 120px rgba(0,0,0,.6), inset 0 0 0 1px rgba(0,0,0,.4);}
+  .fxb-base .pg{position:absolute;inset:14px 10px 14px 16px;border-radius:3px 10px 10px 3px;
+    background:#f4f7ef;padding:34px 30px;color:#14201a;}
+  .fxb-leaf{position:absolute;inset:0;transform-origin:left center;
+    transform-style:preserve-3d;will-change:transform;}
+  .fxb-f,.fxb-b{position:absolute;inset:0;border-radius:6px 14px 14px 6px;
+    -webkit-backface-visibility:hidden;backface-visibility:hidden;overflow:hidden;
+    padding:44px 38px;display:flex;flex-direction:column;}
+  .fxb-f{background:linear-gradient(150deg,#f6f9f0,#e7efdc);color:#14201a;
+    border:1px solid rgba(20,32,26,.15);
+    box-shadow:inset -14px 0 30px rgba(20,32,26,.08);}
+  .fxb-b{background:linear-gradient(210deg,#eef4e4,#dfe9d2);transform:rotateY(180deg);
+    color:#14201a;border:1px solid rgba(20,32,26,.12);
+    box-shadow:inset 14px 0 30px rgba(20,32,26,.08);}
+  .fxb-cover.fxb-f{background:linear-gradient(150deg,#1c3324,#0f2016);color:#eef3ec;
+    border:1px solid rgba(195,243,92,.35);align-items:center;justify-content:center;
+    text-align:center;}
+  .fxb-f{background-image:
+    repeating-linear-gradient(0deg,rgba(20,32,26,.028) 0 .6px,transparent .6px 3.4px),
+    radial-gradient(rgba(20,32,26,.05) 1px,transparent 1px),
+    linear-gradient(150deg,#f6f9f0,#e7efdc);
+    background-size:100% 100%,14px 14px,100% 100%;}
+  .fxb-b{background-image:
+    repeating-linear-gradient(0deg,rgba(20,32,26,.028) 0 .6px,transparent .6px 3.4px),
+    radial-gradient(rgba(20,32,26,.05) 1px,transparent 1px),
+    linear-gradient(210deg,#eef4e4,#dfe9d2);
+    background-size:100% 100%,14px 14px,100% 100%;}
+  .fxb-f::after,.fxb-b::after{content:'';position:absolute;inset:0;pointer-events:none;
+    border-radius:inherit;
+    background:linear-gradient(118deg,rgba(255,255,255,.42),transparent 26%),
+      linear-gradient(298deg,rgba(20,32,26,.07),transparent 32%);}
+  .fxb-cover.fxb-f{background-image:
+    repeating-linear-gradient(45deg,rgba(195,243,92,.05) 0 1px,transparent 1px 4px),
+    repeating-linear-gradient(-45deg,rgba(0,0,0,.18) 0 1px,transparent 1px 4px),
+    radial-gradient(120% 90% at 22% 12%,rgba(195,243,92,.15),transparent 55%),
+    linear-gradient(150deg,#1c3324,#0f2016);
+    background-size:auto,auto,100% 100%,100% 100%;}
+  .fxb-cover.fxb-f::after{background:linear-gradient(118deg,rgba(255,255,255,.09),transparent 30%);}
+  .fxb-base::after{content:'';position:absolute;top:10px;bottom:10px;right:2px;width:8px;
+    border-radius:0 12px 12px 0;opacity:.9;
+    background:repeating-linear-gradient(180deg,#e8eede 0 2px,#cfd8c2 2px 3px);}
+  .fxb-art{position:absolute;right:26px;bottom:64px;width:150px;height:150px;
+    opacity:.55;pointer-events:none;}
+  .fxb-art svg{width:100%;height:100%;}
+  .fxb-ls{margin-top:8px;}
+  .fxb-li{font-family:Manrope;font-size:13.5px;font-weight:700;color:rgba(20,32,26,.75);
+    padding:9px 0 9px 26px;border-bottom:1px solid rgba(20,32,26,.1);position:relative;}
+  .fxb-li::before{content:'✓';position:absolute;left:2px;color:#5a7d1e;font-weight:800;}
+  .fxb-ci{display:flex;align-items:baseline;gap:10px;padding-left:0;}
+  .fxb-ci::before{content:none;}
+  .fxb-ci i{flex:1;border-bottom:1.5px dotted rgba(20,32,26,.3);}
+  .fxb-ci b{color:#5a7d1e;}
+  .fxb-out{margin-top:18px;font-family:var(--font-display);font-weight:700;font-size:15.5px;
+    line-height:1.4;color:#14201a;border-left:3px solid var(--lime,#c3f35c);padding-left:12px;}
+  .fxb-pgno{position:absolute;bottom:14px;left:0;right:0;text-align:center;
+    font-family:var(--font-display);font-weight:700;font-size:10px;
+    letter-spacing:.2em;color:rgba(20,32,26,.35);}
+  .fxb-frame{position:absolute;inset:12px;border:1px solid rgba(195,243,92,.35);
+    border-radius:4px 10px 10px 4px;pointer-events:none;}
+  .fxb-frame::after{content:'';position:absolute;inset:5px;
+    border:1px solid rgba(195,243,92,.18);border-radius:3px 8px 8px 3px;}
+  .fxb-ribbon{position:absolute;right:44px;top:0;width:16px;height:58%;
+    background:linear-gradient(180deg,rgba(195,243,92,.9),rgba(143,200,60,.9));
+    clip-path:polygon(0 0,100% 0,100% 100%,50% 92%,0 100%);opacity:.9;}
+  .fxb-leaf:nth-child(odd) .fxb-b{transform:rotateY(180deg) rotateZ(.45deg);}
+  .fxb-leaf:nth-child(even) .fxb-b{transform:rotateY(180deg) rotateZ(-.35deg);}
+  .fxb-ti{font-family:var(--font-display);font-weight:800;font-size:12px;
+    letter-spacing:.22em;color:#5a7d1e;}
+  .fxb-cover .fxb-ti{color:var(--lime,#c3f35c);}
+  .fxb-nm{font-family:var(--font-display);font-weight:800;font-size:34px;line-height:1.05;
+    margin:10px 0 14px;}
+  .fxb-tp{font-family:Manrope;font-size:13.5px;line-height:1.7;font-weight:600;
+    color:rgba(20,32,26,.62);margin:0;}
+  .fxb-ct2{margin-top:auto;font-family:var(--font-display);font-weight:800;font-size:13px;
+    color:#5a7d1e;letter-spacing:.08em;}
+  .fxb-mt{height:4px;border-radius:99px;background:rgba(20,32,26,.12);margin-top:10px;overflow:hidden;}
+  .fxb-mt i{display:block;height:100%;background:var(--lime,#c3f35c);border-radius:99px;}
+  .fxb-side{position:absolute;top:50%;transform:translateY(-50%);width:15vw;z-index:0;}
+  .fxb-side.l{left:3vw;text-align:right;}
+  .fxb-side.r{right:3vw;}
+  .fxb-book{z-index:2;}
+  .fxb-step{font-family:var(--font-display);font-weight:800;font-size:15px;
+    color:rgba(238,243,236,.35);margin:14px 0;transition:color .4s,transform .4s;}
+  .fxb-step.on{color:var(--lime,#c3f35c);transform:translateX(-6px);}
+  .fxb-side.r .fxb-step.on{transform:translateX(6px);}
+  .fxb-prog{font-family:var(--font-display);font-weight:800;font-size:13px;
+    letter-spacing:.2em;color:var(--lime,#c3f35c);text-align:center;padding:18px 0 60px;}
+}
+</style>
+<script>
+window.addEventListener('load',function(){
+'use strict';
+if(!matchMedia('(min-width: 980px)').matches)return;
+if(!matchMedia('(prefers-reduced-motion: no-preference)').matches)return;
+if(!window.gsap)return;
+var tiers=document.getElementById('tiers'); if(!tiers)return;
+var sec=tiers.closest('section'); if(!sec)return;
+sec.classList.add('fxb-on');
+var T=[['TIER 1','Entry','Markets, pairs, brokers,\nrisk fundamentals.',18],
+ ['TIER 2','Beginner','Candlesticks, S&R,\nchart reading.',24],
+ ['TIER 3','Intermediate','Strategy, confluence,\ntrade management.',32],
+ ['TIER 4','Advanced','Liquidity, structure,\ninstitutional execution.',34],
+ ['TIER 5','Psychology','Discipline, bias,\nprocess over outcome.',22]];
+function face(cls,inner){return '<div class="'+cls+'">'+inner+'</div>';}
+var ART=[
+ '<svg viewBox="0 0 200 200"><g fill="none" stroke="rgba(90,125,30,.5)" stroke-width="1"><circle cx="100" cy="100" r="86"/><circle cx="100" cy="100" r="62" stroke-dasharray="3 5"/><path d="M100 8v28M100 164v28M8 100h28M164 100h28"/><path d="M100 46l14 40 40 14-40 14-14 40-14-40-40-14 40-14z" fill="rgba(195,243,92,.2)" stroke="rgba(90,125,30,.6)"/></g><g font-family="Manrope" font-size="9" font-weight="700" fill="rgba(20,32,26,.4)" text-anchor="middle"><text x="100" y="26">EUR</text><text x="100" y="186">JPY</text><text x="22" y="103">GBP</text><text x="178" y="103">USD</text></g></svg>',
+ '<svg viewBox="0 0 200 200"><g stroke="rgba(20,32,26,.55)" stroke-width="1.5" fill="none"><path d="M100 30v34M100 138v34"/><rect x="86" y="64" width="28" height="74" fill="rgba(195,243,92,.35)" stroke-width="2"/><path d="M114 52h34M148 52v0M114 64l30-14M114 150l30 12M100 30h-30" stroke-dasharray="3 3" stroke-width="1"/></g><g font-family="Manrope" font-size="9" font-weight="700" fill="rgba(20,32,26,.5)"><text x="24" y="26">wick</text><text x="152" y="48">high</text><text x="148" y="168">close</text></g></svg>',
+ '<svg viewBox="0 0 200 200"><g fill="none"><rect x="20" y="52" width="160" height="30" fill="rgba(195,243,92,.22)"/><rect x="20" y="118" width="160" height="30" fill="rgba(20,32,26,.08)"/><path d="M20 160 60 130 90 142 130 96 168 66" stroke="rgba(20,32,26,.6)" stroke-width="2"/><circle cx="130" cy="96" r="7" fill="rgba(195,243,92,.9)" stroke="rgba(20,32,26,.5)"/><path d="M130 96l34-22" stroke="rgba(90,125,30,.7)" stroke-width="1.5" stroke-dasharray="4 3"/></g><text x="26" y="70" font-family="Manrope" font-size="9" font-weight="700" fill="rgba(20,32,26,.45)">supply</text><text x="26" y="136" font-family="Manrope" font-size="9" font-weight="700" fill="rgba(20,32,26,.45)">demand</text></svg>',
+ '<svg viewBox="0 0 200 200"><g>'+
+   [0,1,2,3,4,5,6].map(function(r){return '<rect x="30" y="'+(34+r*20)+'" width="'+(140-r*16)+'" height="12" rx="3" fill="rgba(20,32,26,'+(.28-r*.032)+')"/>';}).join('')+
+   '<path d="M46 172 Q 110 160 150 44" fill="none" stroke="rgba(195,243,92,.85)" stroke-width="2.5" stroke-linecap="round"/><path d="M150 44l-12 3 7 10z" fill="rgba(195,243,92,.9)"/></g><text x="30" y="24" font-family="Manrope" font-size="9" font-weight="700" fill="rgba(20,32,26,.45)">liquidity above highs</text></svg>',
+ '<svg viewBox="0 0 200 200"><circle cx="100" cy="96" r="64" fill="none" stroke="rgba(20,32,26,.5)" stroke-width="7" stroke-linecap="round" stroke-dasharray="360 43" transform="rotate(-80 100 96)"/><circle cx="100" cy="96" r="64" fill="none" stroke="rgba(195,243,92,.55)" stroke-width="2" stroke-dasharray="2 7"/><text x="100" y="182" font-family="Manrope" font-size="10" font-weight="800" letter-spacing="2" fill="rgba(20,32,26,.5)" text-anchor="middle">PROCESS &gt; OUTCOME</text></svg>'];
+var N=[['Reading a currency quote','Choosing a broker safely','Position sizing 101'],
+ ['Anatomy of a candle','Drawing S&R that holds','Order types in practice'],
+ ['Stacking confluence','Session timing edges','Managing the open trade'],
+ ['Mapping liquidity pools','Structure shifts','Execution without slippage'],
+ ['Naming your biases','The revenge-trade circuit','Rules that hold under stress']];
+var OUT=['You can read any pair, anywhere.','You see structure, not noise.',
+ 'You have a strategy that is yours.','You trade like the desks do.',
+ 'You follow process — even on red days.'];
+function notes(i){
+  var t=T[i];
+  return '<div class="fxb-ti">'+t[0]+' · FIELD NOTES</div>'+
+   '<div class="fxb-nm" style="font-size:24px;">What you\'ll master</div>'+
+   '<div class="fxb-ls">'+N[i].map(function(l){return '<div class="fxb-li">'+l+'</div>';}).join('')+'</div>'+
+   '<div class="fxb-out">“'+OUT[i]+'”</div>'+
+   '<div class="fxb-pgno">— '+t[0].toLowerCase()+' —</div>';
+}
+function contents(){
+  return '<div class="fxb-ti">THE TRADING LAB</div>'+
+   '<div class="fxb-nm" style="font-size:26px;">Contents</div>'+
+   '<div class="fxb-ls">'+T.map(function(t,i){return '<div class="fxb-li fxb-ci"><span>'+t[1]+'</span><i></i><b>0'+(i+1)+'</b></div>';}).join('')+'</div>'+
+   '<div class="fxb-pgno">— the playbook —</div>';
+}
+function spread(i){
+  var t=T[i], pct=Math.round(((i+1)/5)*100);
+  return '<div class="fxb-art">'+ART[i]+'</div>'+
+   '<div class="fxb-ti">'+t[0]+'</div><div class="fxb-nm">'+t[1]+
+   '</div><p class="fxb-tp">'+t[2].replace('\n','<br>')+'</p>'+
+   '<div class="fxb-ct2">'+t[3]+' lessons<div class="fxb-mt"><i style="width:'+pct+'%"></i></div></div>'+
+   '<div class="fxb-pgno">— 0'+(i+1)+' —</div>';
+}
+var stage=document.createElement('div'); stage.className='fxb-stage';
+stage.innerHTML='<div class="fxb-glow"></div>';
+var book=document.createElement('div'); book.className='fxb-book';
+var base=document.createElement('div'); base.className='fxb-base';
+base.innerHTML='<div class="pg">'+spread(4)+'</div>';
+book.appendChild(base);
+var leaves=[];
+for(var i=4;i>=0;i--){
+  var lf=document.createElement('div'); lf.className='fxb-leaf';
+  lf.style.zIndex=10+ (5-i);
+  var front = i===0
+    ? face('fxb-f fxb-cover','<div class="fxb-frame"></div><div><svg width="64" height="64" viewBox="0 0 56 56" style="margin:0 auto 18px;display:block;"><circle cx="28" cy="28" r="26" fill="none" stroke="rgba(195,243,92,.55)" stroke-width="1"/><circle cx="28" cy="28" r="21.5" fill="none" stroke="rgba(195,243,92,.4)" stroke-width="1" stroke-dasharray="2.2 3.6"/><path d="M15 35 L23.5 26.5 L28.5 30.5 L38 20" fill="none" stroke="#c3f35c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M38.8 19.2 l-6 .8 4.3 4.6 z" fill="#c3f35c"/></svg><div class="fxb-ti">THE TRADING LAB</div><div class="fxb-nm" style="color:#eef3ec;">The Playbook</div><p class="fxb-tp" style="color:rgba(238,243,236,.6);">Five tiers · 130+ lessons<br>from first principles to execution.</p></div><div class="fxb-ribbon"></div>')
+    : face('fxb-f',spread(i-1));
+  lf.innerHTML=front+face('fxb-b', i===0?contents():notes(i-1));
+  book.appendChild(lf); leaves.unshift(lf);
+}
+stage.appendChild(book);
+var sideL=document.createElement('div'); sideL.className='fxb-side l';
+var sideR=document.createElement('div'); sideR.className='fxb-side r';
+T.forEach(function(t,i){
+  var d=document.createElement('div'); d.className='fxb-step';
+  d.textContent=t[0]+' — '+t[1];
+  (i<3?sideL:sideR).appendChild(d);
+});
+stage.appendChild(sideL); stage.appendChild(sideR);
+var prog=document.createElement('div'); prog.className='fxb-prog'; prog.textContent='THE PLAYBOOK';
+var wrapEl=sec.querySelector('.wrap');
+sec.insertBefore(stage, wrapEl.nextSibling);
+sec.insertBefore(prog, stage.nextSibling);
+var steps=stage.querySelectorAll('.fxb-step');
+var tl=gsap.timeline({scrollTrigger:{trigger:sec,start:'top top',
+  end:'+=3200',pin:true,scrub:true,
+  onUpdate:function(st2){
+    var k=Math.min(4,Math.floor(st2.progress*6));
+    prog.textContent = st2.progress<.08 ? 'THE PLAYBOOK' :
+      'TIER 0'+Math.min(5,k+1)+' / 05 — '+T[Math.min(4,k)][1].toUpperCase();
+    steps.forEach(function(sp,i){sp.classList.toggle('on', st2.progress*6-1 >= i);});
+  }}});
+leaves.forEach(function(lf,i){
+  tl.to(lf,{rotationY:-178+i*1.2,duration:1,ease:'power2.inOut'}, i*.92);
+});
+tl.to(book,{rotateX:6,duration:1},0);
+console.info('[FX Playbook] 3D book curriculum live');
+});
 </script>
 </body>
 </html>

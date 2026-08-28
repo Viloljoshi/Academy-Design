@@ -1,4 +1,4 @@
-/* FX Academy — deterministic dummy-data engine (educational demo data).
+/* The Trading Lab — deterministic dummy-data engine (educational demo data).
    One seeded generator so Journal, Dashboard and Analytics all show the SAME
    numbers. ~5 months of trades, ~54% win rate, modest honest R multiples.
    Swap for a real API later: every page reads only window.FXData. */

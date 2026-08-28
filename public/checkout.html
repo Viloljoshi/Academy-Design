@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FX Academy, Checkout</title>
+<title>The Trading Lab, Checkout</title>
 <link rel="stylesheet" href="../assets/lumina.css">
 <script src="../assets/shell.js"></script>
 <script src="../assets/lumina.js"></script>
@@ -111,7 +111,7 @@
           <div class="field"><label>Risk comfort</label><select class="input"><option>Conservative (0.5%)</option><option selected>Balanced (1%)</option><option>Aggressive (2%)</option></select></div>
         </div>
         <div class="field"><label>How did you hear about us?</label><select class="input"><option>Affiliate / creator</option><option>YouTube</option><option>Webinar</option><option>Friend</option><option>Search</option></select></div>
-        <button class="btn btn-lime btn-lg" onclick="finish()">Finish & enter FX Academy</button>
+        <button class="btn btn-lime btn-lg" onclick="finish()">Finish & enter The Trading Lab</button>
       </div>
     </div>
   </div>
@@ -120,7 +120,7 @@
   <div class="summary">
     <div class="card card-pad">
       <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">Order summary</h3>
-      <div class="between" style="margin-bottom:10px;gap:16px;"><span class="muted" id="sumPlan" style="white-space:nowrap;">FX Academy Pro</span><span class="num" id="sumPrice">$97.00</span></div>
+      <div class="between" style="margin-bottom:10px;gap:16px;"><span class="muted" id="sumPlan" style="white-space:nowrap;">The Trading Lab Pro</span><span class="num" id="sumPrice">$97.00</span></div>
       <div class="between" style="margin-bottom:8px;font-size:14px;"><span class="muted">Billing</span><span>Monthly</span></div>
       <div id="couponLine"></div>
       <div class="divider" style="margin:14px 0;"></div>
@@ -129,7 +129,7 @@
         <input class="input" id="coupon" placeholder="Coupon code" style="flex:1;padding:9px 12px;">
         <button class="btn btn-ghost btn-sm" onclick="applyCoupon()">Apply</button>
       </div>
-      <p class="muted" style="font-size:11.5px;margin-top:16px;line-height:1.6;">Cancel anytime. By subscribing you agree to our Terms. FX Academy provides educational content only, not financial advice.</p>
+      <p class="muted" style="font-size:11.5px;margin-top:16px;line-height:1.6;">Cancel anytime. By subscribing you agree to our Terms. The Trading Lab provides educational content only, not financial advice.</p>
     </div>
     <div id="refNote"></div>
   </div>
@@ -175,7 +175,7 @@ function renderPlanPick(){
 function pickPlan(k){ plan=k; renderPlanPick(); updateSummary(); }
 function updateSummary(){
   const p=PLANS[plan];
-  document.getElementById('sumPlan').textContent='FX Academy '+p.name;
+  document.getElementById('sumPlan').textContent='The Trading Lab '+p.name;
   document.getElementById('sumPrice').textContent='$'+p.price.toFixed(2);
   const total=Math.max(0,p.price-coupon);
   document.getElementById('sumTotal').textContent='$'+total.toFixed(2);

@@ -1,4 +1,4 @@
-/* FX Academy, shell builder: logo, public nav/footer, app sidebars/topbars.
+/* The Trading Lab, shell builder: logo, public nav/footer, app sidebars/topbars.
    Keeps every page DRY. Call FXShell.* after DOM ready. */
 (function (w) {
 
@@ -29,7 +29,7 @@
           <path d="M3 21 H21" stroke="#c3f35c" stroke-width="1.4" stroke-linecap="round" opacity=".4"/>
         </svg>
       </span>
-      <span style="font-family:var(--font-display);font-weight:700;font-size:${h*0.62}px;letter-spacing:-.02em;color:${ink};">FX&nbsp;Academy</span>
+      <span style="font-family:var(--font-display);font-weight:700;font-size:${h*0.62}px;letter-spacing:-.02em;color:${ink};">The&nbsp;Trading&nbsp;Lab</span>
     </span>`;
   }
 
@@ -164,9 +164,9 @@
             ${ls.map(([t,u])=>`<a href="${u}" style="display:block;color:var(--d-ink);font-size:14px;padding:6px 0;opacity:.85;">${t}</a>`).join('')}</div>`).join('')}
         </div>
         <hr style="border:0;border-top:1px solid var(--d-outline);margin:36px 0 22px;">
-        <p style="font-size:12.5px;color:var(--d-ink-var);line-height:1.7;max-width:880px;">FX Academy provides educational content and tools only. Nothing on this platform is financial advice. Forex trading involves substantial risk and may not be suitable for all traders. Past performance does not guarantee future results.</p>
+        <p style="font-size:12.5px;color:var(--d-ink-var);line-height:1.7;max-width:880px;">The Trading Lab provides educational content and tools only. Nothing on this platform is financial advice. Forex trading involves substantial risk and may not be suitable for all traders. Past performance does not guarantee future results.</p>
         <div class="between" style="margin-top:18px;flex-wrap:wrap;gap:12px;">
-          <span style="font-size:13px;color:var(--d-ink-var);">© 2026 FX Academy. All rights reserved.</span>
+          <span style="font-size:13px;color:var(--d-ink-var);">© 2026 The Trading Lab. All rights reserved.</span>
           <div class="row gap3" style="font-size:13px;color:var(--d-ink-var);">
             <a href="#">Terms</a><a href="#">Privacy</a><a href="#">Risk Disclosure</a><a href="#">Affiliate Disclosure</a>
           </div>
@@ -197,7 +197,7 @@
   };
   function ic(name){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="19" height="19"><path d="${ICON[name]||ICON.dashboard}"/></svg>`; }
 
-  // config: {brand:'FX Academy', items:[ [section, [[label,href,icon,locked?],...]] ], active, base, topRight }
+  // config: {brand:'The Trading Lab', items:[ [section, [[label,href,icon,locked?],...]] ], active, base, topRight }
   function appSidebar(cfg) {
     const groups = cfg.items.map(([section, links]) => `
       ${section?`<div class="nav-sec">${section}</div>`:''}
@@ -346,3 +346,32 @@
   w.FXShell.surfaceSidebar = surfaceSidebar;
   w.FXShell.MEMBER = MEMBER;
 })(window);
+
+/* ── The Trading Lab · site-wide texture system ─────────────────────────
+   Living film grain + a whisper of tooth on every surface, so no page
+   reads as flat "vibe-coded" gradient fill. Injected from the shell so
+   every page gets it identically. */
+(function(){
+  if(document.getElementById('ttl-texture'))return;
+  var st=document.createElement('style'); st.id='ttl-texture';
+  st.textContent=
+   '.ttl-grain{position:fixed;inset:-60px;z-index:9990;pointer-events:none;'+
+   'opacity:.045;mix-blend-mode:overlay;'+
+   'background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'180\' height=\'180\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'.82\' numOctaves=\'2\'/%3E%3C/filter%3E%3Crect width=\'180\' height=\'180\' filter=\'url(%23n)\'/%3E%3C/svg%3E");'+
+   'animation:ttlGrain 8s steps(3) infinite;}'+
+   '@keyframes ttlGrain{0%{transform:translate(0,0)}33%{transform:translate(-22px,14px)}66%{transform:translate(16px,-18px)}100%{transform:translate(0,0)}}'+
+   '@media (prefers-reduced-motion: reduce){.ttl-grain{animation:none;}}'+
+   '@media (prefers-reduced-transparency: reduce){.ttl-grain{display:none;}}'+
+   '.dark-deep{position:relative;}'+
+   '.dark-deep::after{content:"";position:absolute;inset:0;pointer-events:none;'+
+   'background:radial-gradient(120% 100% at 50% 0%,transparent 55%,rgba(0,0,0,.22) 100%);}'
+  ;
+  document.head.appendChild(st);
+  function mount(){
+    if(document.querySelector('.ttl-grain'))return;
+    var g=document.createElement('div'); g.className='ttl-grain';
+    g.setAttribute('aria-hidden','true');
+    document.body.appendChild(g);
+  }
+  if(document.body)mount(); else addEventListener('DOMContentLoaded',mount);
+})();

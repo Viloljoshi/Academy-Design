@@ -1,4 +1,4 @@
-/* FX Academy, shared helpers: SVG charts (lime gradients), toasts, utils */
+/* The Trading Lab, shared helpers: SVG charts (lime gradients), toasts, utils */
 (function (w) {
   const NS = 'http://www.w3.org/2000/svg';
   const el = (n, a) => { const e = document.createElementNS(NS, n); for (const k in (a||{})) e.setAttribute(k, a[k]); return e; };
